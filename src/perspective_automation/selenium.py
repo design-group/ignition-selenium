@@ -54,7 +54,7 @@ class Session():
         self.waitForElement("submit-button").click()
 
 
-class component():
+class PerspectiveComponent():
     def __init__(self, session: Session, locator: By, identifier):
         self.session = session
         self.locator = locator
@@ -71,9 +71,11 @@ class component():
     def selectAll(self):
         self.send_keys(selectAllKeys())
 
-    
+class Label(PerspectiveComponent):
+    def getText(self):
+        return self.element.text
 
-class TextBox(component):
+class TextBox(PerspectiveComponent):
     def clearText(self):
         self.selectAll()
         self.send_keys(Keys.DELETE)
@@ -85,7 +87,7 @@ class TextBox(component):
         if withSubmit:
             self.element.submit()
 
-class TextArea(component):
+class TextArea(PerspectiveComponent):
     def clearText(self):
         self.selectAll()
         self.send_keys(Keys.DELETE)
@@ -96,9 +98,7 @@ class TextArea(component):
 
         self.send_keys(str(text))
 
-class NumericInput(component):
-    # def __init__(self, session: Session, locator: By, identifier):
-    #     super(NumericInput, self).__init__(session, locator, identifier)
+class NumericInput(PerspectiveComponent):
     def getInputBox(self):
         self.element.find_element_by_class_name("ia-numeral-input").click()
         return self.element.find_element_by_class_name("ia-numeral-input")
@@ -120,7 +120,7 @@ class NumericInput(component):
             self.getInputBox().submit()
 
 
-class Dropdown(component):
+class Dropdown(PerspectiveComponent):
     def clearData(self):
         self.element.clear()
     
@@ -136,4 +136,6 @@ class Dropdown(component):
                 return
         
 
-
+class Button(PerspectiveComponent):
+    def click(self):
+        self.element.click()
