@@ -1,5 +1,4 @@
 import time
-import platform
 from selenium.webdriver.common.by import By
 from perspective_automation.selenium import Session, Label, TextBox, TextArea, NumericInput, Dropdown, Button
 
@@ -17,7 +16,6 @@ def test_session():
     
     numberOfAdds = Label(session, By.ID, "numberOfAddsLabel")
     startingAddCount = int(numberOfAdds.getText())
-
 
     dropdown = Dropdown(session, By.ID, "tubCalculatorDropdown")
     dropdown.setValue("Tub30")

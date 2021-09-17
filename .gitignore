@@ -1,4 +1,10 @@
+# Python build data
 **/__pycache__
 **.egg-info
+
+# Virtual Environment Data
 .venv
 pyvenv.cfg
+
+# VSCode Config
+*.code-workspace
