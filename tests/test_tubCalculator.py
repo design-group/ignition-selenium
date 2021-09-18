@@ -2,10 +2,11 @@ import time
 from selenium.webdriver.common.by import By
 from perspective_automation.selenium import Session, Label, TextBox, TextArea, NumericInput, Dropdown, Button
 
-def test_session():
-    URL = "http://localhost/data/perspective/client/MES/component-test-fixture"
+def test_tubCalculator():
+    BASE_URL = "http://localhost"
+    PAGE_PATH = "/data/perspective/client/MES/component-test-fixture"
     CREDENTIALS = {"username":"RATester01", "password":"N3verp@tch2021"}
-    session = Session(URL, 10, CREDENTIALS)
+    session = Session(BASE_URL, PAGE_PATH, 10, CREDENTIALS)
     session.login()
 
     viewPath = TextBox(session, By.ID, "viewPathTextField")
@@ -34,7 +35,7 @@ def test_session():
         print("Test success!")
 
 if __name__ == "__main__":
-   test_session()
+   test_tubCalculator()
 
 
 
