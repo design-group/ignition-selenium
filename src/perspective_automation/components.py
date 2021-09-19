@@ -1,7 +1,15 @@
 
+from selenium.webdriver.remote.webelement import WebElement
 from perspective_automation.perspective import Component, PerspectiveComponent, PerspectiveElement
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+
+
+class ComponentInteractionException(Exception):
+    pass
+
+class View(Component):
+    pass
 
 class Label(PerspectiveComponent):
     def getText(self):
@@ -30,6 +38,22 @@ class TextArea(PerspectiveComponent):
 
         self.send_keys(str(text))
 
+class CheckBox(PerspectiveComponent):
+    def getValue(self):
+        checkboxId = self.element.find_element_by_class_name("icon").get_attribute("id")
+        checkboxState = {
+            "check_box": True,
+            "check_box_outline_blank": False
+        }
+        return checkboxState.get(checkboxId)
+
+    def toggle(self):
+        self.element.find_element_by_class_name("ia_checkbox").click()
+
+    def setValue(self, value: bool):
+        if self.getValue() != value:
+            self.toggle()
+
 class NumericInput(PerspectiveComponent):
     def getInputBox(self):
         self.element.find_element_by_class_name("ia-numeral-input").click()
@@ -54,7 +78,7 @@ class NumericInput(PerspectiveComponent):
 
 class Dropdown(PerspectiveComponent):
     def clearData(self):
-        self.element.clear()
+        self.session.waitForElement("iaDropdownCommon_clear_value", By.CLASS_NAME, root_element=self).click()
     
     def setValue(self, option_text):
         self.element.click()
@@ -64,6 +88,24 @@ class Dropdown(PerspectiveComponent):
             if option.text == option_text:
                 option.click()
                 return
+    
+    def setValues(self, option_texts):
+        if not "iaDropdownCommon_multi-select" in self.element.get_attribute("class"):
+            raise ComponentInteractionException("Dropdown is not multi-select")
+
+        self.clearData()
+        for option in option_texts:
+            self.element.click()
+            optionAdded = False
+            option_elements = self.session.waitForElement("ia_dropdown__option", By.CLASS_NAME, multiple=True)
+            for option_element in option_elements:
+                if option_element.text == option:
+                    optionAdded = True
+                    option_element.click()
+                    break
+            
+            if not optionAdded:
+                raise ComponentInteractionException("Dropdown Value Not Present: %s" % option)
         
 
 class Button(PerspectiveComponent):
@@ -86,7 +128,7 @@ class Table(PerspectiveComponent):
     header_cell_class_name = "ia_table__head__header__cell"
     row_group_class_name = "ia_table__body__rowGroup"
     cell_class_name = "ia_table__cell"
-
+    table_filter_container_class_name = "ia_tableComponent__filterContainer"
 
     def getHeaders(self):
         headerElements = self.getElement(self.header_cell_class_name, multiple=True, root_element=self.element)
@@ -123,13 +165,51 @@ class Table(PerspectiveComponent):
         self.getRowGroups()[rowIndex].click()
     
     def doubleClickOnRow(self, rowIndex):
-        self.getRowGroups()[rowIndex].doubleClick()
+        rowGroups = self.getRowGroups()
+
+        if rowIndex > len(rowGroups):
+            raise ComponentInteractionException("Click index %s out of range: %s" % (rowIndex, len(rowGroups)))
+
+        rowGroups[rowIndex].doubleClick()
 
     def filterTable(self, keys):
-        filterContainer = self.getElement("ia_tableComponent__filterContainer", root_element=self.element)
+        filterContainer = self.getElement(self.table_filter_container_class_name, root_element=self)
         self.getElement("ia_inputField", root_element=filterContainer).click()
         filterInputBox = self.getElement("ia_inputField", root_element=filterContainer)
         filterInputBox.send_keys(keys)
 
-class View(Component):
-    pass
+
+class AccordionHeader(PerspectiveElement):
+    def getHeaderType(self):
+        if self.find_element_by_class_name("ia_accordionComponent__header__text"):
+            return "text"
+        elif self.find_element_by_class_name("ia_accordionComponent__header__view"):
+            return "view"
+        else:
+            return None
+    
+    def isExpanded(self):
+        return "expanded" in self.find_element_by_partial_classname("ia_accordionComponent__header__chevron").get_attribute("class")
+    
+    def toggleExpansion(self):
+        self.element.click()
+
+class Accordion(PerspectiveComponent):
+    def getHeaderElements(self):
+        return self.getElement("ia_accordionComponent__header", multiple=True, root_element=self, strict_identifier=True)
+
+    def getAccordianHeaders(self):
+        return [AccordionHeader(self.session, element) for element in self.getHeaderElements()]
+
+    def getBodyElements(self):
+        return self.getElement("ia_accordionComponent__body", multiple=True, root_element=self, strict_identifier=True)
+
+    def toggleBody(self, index):
+        AccordionHeader(self.session, self.getHeaderElements()[index]).toggleExpansion()
+
+    def expandBody(self, index):
+        headersElements = self.getHeaderElements()
+        headers = [AccordionHeader(self.session, element) for element in headersElements]
+
+        if not headers[index].isExpanded():
+            headers[index].toggleExpansion()

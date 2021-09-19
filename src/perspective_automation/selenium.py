@@ -38,8 +38,11 @@ class Session():
     def navigateToUrl(self, url = None):
         self.driver.get(url or self.base_url)
 
-    def waitForElement(self, identifier, locator=By.CLASS_NAME, multiple=False, root_element: WebElement=None):
+    def waitForElement(self, identifier, locator=By.CLASS_NAME, multiple=False, root_element: WebElement=None, strict_identifier=False):
         if root_element:
+            if not isinstance(root_element, WebElement):
+                root_element = root_element.element
+            
             xPathDict = {
                 By.CLASS_NAME: "@class",
                 By.ID: "@id"
@@ -49,8 +52,9 @@ class Session():
                 parentIdentifier =  "//*[@id='%s']" % root_element.get_attribute("id")
             elif root_element.get_attribute("class"):
                 parentIdentifier = "//*[@class='%s']" % root_element.get_attribute("class")
-
-            identifier = "%s//*[contains(%s, '%s')]" % (parentIdentifier, xPathDict.get(locator), identifier)
+            
+            identifierBase = "%s//*[%s='%s']" if strict_identifier else "%s//*[contains(%s, '%s')]"
+            identifier = identifierBase % (parentIdentifier, xPathDict.get(locator), identifier)
             locator = By.XPATH
 
         # print("Waiting for element by %s: %s" % (locator, identifier))
