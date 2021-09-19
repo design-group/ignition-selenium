@@ -18,9 +18,9 @@ class Component():
         else:
             self.element = element
     
-    def getElement(self, identifier, locator=By.CLASS_NAME, multiple=False, root_element: WebElement=None):
+    def getElement(self, identifier, locator=By.CLASS_NAME, multiple=False, root_element: WebElement=None, strict_identifier=False):
         if root_element:
-            return self.session.waitForElement(identifier, locator, multiple=multiple, root_element=root_element)
+            return self.session.waitForElement(identifier, locator, multiple=multiple, root_element=root_element, strict_identifier=strict_identifier)
 
         return self.session.waitForElement(identifier, locator, multiple)
 
@@ -44,6 +44,12 @@ class PerspectiveElement():
 
     def find_elements_by_class_name(self, class_name):
         return self.element.find_elements_by_class_name(class_name)
+
+    def find_element_by_partial_classname(self, class_name):
+        return self.find_element_by_xpath("//*[contains(@class, '%s')]" % class_name)
+
+    def find_element_by_xpath(self, xpath):
+        return self.element.find_element_by_xpath(xpath)
     
     def doubleClick(self):
         self.session.doubleClick(self.element)
