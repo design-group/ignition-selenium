@@ -10,7 +10,6 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-
 class ElementNotFoundException(Exception):
     pass
 
@@ -19,12 +18,10 @@ class Credentials:
     username: None
     password: None
 
-
 class SelectAllKeys(Enum):
     LINUX = Keys.CONTROL + "a"
     WINDOWS = Keys.CONTROL + "a"
     DARWIN = Keys.COMMAND + "a"
-
 
 def getChromeDriver(mobile: bool=False) -> webdriver:
     chrome_options = webdriver.ChromeOptions()
@@ -78,6 +75,7 @@ class Session():
     def close(self):
         self.driver.quit()
 
+    
     def login(self) -> None:
         # Wait for the login panel to be present
         try:
@@ -94,7 +92,6 @@ class Session():
 
         # Click the opening "CONTINUE TO LOG IN" button
         loginPanel.find_element_by_class_name("submit-button").click()
-        print("Clicked!")
 
         # Enter the username
         usernameField = self.waitForElement("username-field")

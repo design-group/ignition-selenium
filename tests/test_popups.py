@@ -1,7 +1,7 @@
 import time
 from selenium.webdriver.common.by import By
 from perspective_automation.selenium import Session, Credentials
-from perspective_automation.components import Button
+from perspective_automation.components import Button, Popup
 
 def test_popups():
     BASE_URL = "http://localhost"
@@ -11,10 +11,14 @@ def test_popups():
     session.login()
 
     orderFilterIcon = Button(session, By.ID, "orderFilterIcon")
-    orderFilterIcon.click()
-
-
-    time.sleep(5)
+    
+    for _ in range(5):
+        orderFilterIcon.click()
+        orderFilterPopup = Popup(session, "orderFilters")
+        time.sleep(0.5)
+        orderFilterPopup.close()
+        time.sleep(0.5)
+        
     session.close()
 if __name__ == "__main__":
    test_popups()
