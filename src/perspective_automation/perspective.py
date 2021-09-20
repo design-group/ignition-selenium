@@ -12,7 +12,6 @@ class ElementNotFoundException(Exception):
 class ComponentInteractionException(Exception):
     pass
 
-
 class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None):
         self.session = session

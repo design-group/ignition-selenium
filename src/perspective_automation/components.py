@@ -2,10 +2,13 @@
 from enum import Enum
 from typing import Union
 
+from selenium.common.exceptions import TimeoutException
+
 from perspective_automation.perspective import (Component,
                                                 ComponentInteractionException,
                                                 PerspectiveComponent,
-                                                PerspectiveElement)
+                                                PerspectiveElement,
+                                                ElementNotFoundException)
 from perspective_automation.selenium import Session
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -15,7 +18,6 @@ from selenium.webdriver.remote.webelement import WebElement
 class AccordionHeaderType(Enum):
     TEXT = 1
     VIEW = 2
-
 
 class AccordionHeader(PerspectiveElement):
     def getHeaderType(self) -> AccordionHeaderType:
@@ -78,7 +80,13 @@ class CheckBox(PerspectiveComponent):
 
 class Dropdown(PerspectiveComponent):
     def getValues(self) -> list[WebElement]:
-        return self.waitForElements(By.CLASS_NAME, "ia_dropdown__valuePill", timeout_in_seconds=1)
+        try:
+            return self.waitForElements(By.CLASS_NAME, "ia_dropdown__valuePill", timeout_in_seconds=1)
+        except ElementNotFoundException:
+            """There currently isn't any values"""
+            return []
+        except:
+            raise ComponentInteractionException("Unable to identifies values in dropdown")
 
     def clearData(self) -> None:
         try:
@@ -90,8 +98,7 @@ class Dropdown(PerspectiveComponent):
 
     def setValue(self, option_text: str) -> None:
         self.click()
-        dropdownOptions = self.waitForElements(
-            By.CLASS_NAME, "ia_dropdown__option")
+        dropdownOptions = self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
 
         for option in dropdownOptions:
             if option.text == option_text:
@@ -103,15 +110,13 @@ class Dropdown(PerspectiveComponent):
             raise ComponentInteractionException("Dropdown is not multi-select")
 
         currentValues = self.getValues()
-        if currentValues:
-            for value in currentValues:
-                option_texts.remove(value.text)
+        for value in currentValues:
+            option_texts.remove(value.text)
 
         for option in option_texts:
             self.click()
             optionAdded = False
-            option_elements = self.waitForElements(
-                By.CLASS_NAME, "ia_dropdown__option")
+            option_elements = self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
             for option_element in option_elements:
                 if option_element.text == option:
                     optionAdded = True
@@ -125,6 +130,7 @@ class Dropdown(PerspectiveComponent):
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
+
 class NumericInput(PerspectiveComponent):
     def getInputBox(self) -> WebElement:
         self.find_element_by_class_name("ia-numeral-input").click()
