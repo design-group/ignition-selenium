@@ -1,58 +1,47 @@
+from selenium.webdriver.support.wait import WebDriverWait
 from perspective_automation.selenium import Session
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-
-class Component():
+class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement=None, parent: WebElement=None):
         self.session = session
-        self.locator = locator
-        self.identifier = identifier
-
-        if isinstance(parent, Component):
-            self.parent = parent.element
-        else:
-            self.parent = parent
-
-        if not element:
-            self.element = self.getElement(self.identifier, self.locator, root_element= self.parent)
-        else:
-            self.element = element
     
-    def getElement(self, identifier, locator=By.CLASS_NAME, multiple=False, root_element: WebElement=None, strict_identifier=False):
-        if root_element:
-            return self.session.waitForElement(identifier, locator, multiple=multiple, root_element=root_element, strict_identifier=strict_identifier)
+        if element:
+            super().__init__(element.parent, element.id, w3c=True)
+        else:
+            element = self.session.waitForElement(identifier, locator, root_element=parent)
+            super().__init__(element.parent, element.id, w3c=True)
 
-        return self.session.waitForElement(identifier, locator, multiple)
+    def find_element_by_partial_class_name(self, name) -> WebElement:
+        return super().find_element_by_xpath("//*[contains(@class, '%s')]" % name)
+
+    def find_elements_by_partial_class_name(self, name) -> list[WebElement]:
+        return super().find_elements_by_xpath("//*[contains(@class, '%s')]" % name)
+
+    def waitForElement(self, locator: By, identifier: str, timeout_in_seconds=None) -> WebElement:
+        method = lambda x: self.find_element(locator, identifier)
+
+        if not timeout_in_seconds:
+            return self.session.wait.until(method)
+        else:
+            return WebDriverWait(self.session.driver, timeout_in_seconds).until(method)
+        
+
+    def waitForElements(self, locator: By, identifier: str, timeout_in_seconds=None) -> list[WebElement]:
+        method = lambda x: self.find_elements(locator, identifier)
+
+        if not timeout_in_seconds:
+            return self.session.wait.until(method)
+        else:
+            return WebDriverWait(self.session.driver, timeout_in_seconds).until(method)
 
 class PerspectiveComponent(Component):
-    def send_keys(self, keys):
-        self.element.send_keys(keys)
-
-    def selectAll(self):
+    def selectAll(self) -> None:
         self.send_keys(self.session.select_all_keys)
 
-class PerspectiveElement():
+class PerspectiveElement(Component):
     def __init__(self, session: Session, element: WebElement):
-        self.element = element
-        self.session = session
+        super().__init__(session, element=element)
 
-    def get_attribute(self, attribute):
-        return self.element.get_attribute(attribute)
-    
-    def find_element_by_class_name(self, class_name):
-        return self.element.find_element_by_class_name(class_name)
-
-    def find_elements_by_class_name(self, class_name):
-        return self.element.find_elements_by_class_name(class_name)
-
-    def find_element_by_partial_classname(self, class_name):
-        return self.find_element_by_xpath("//*[contains(@class, '%s')]" % class_name)
-
-    def find_element_by_xpath(self, xpath):
-        return self.element.find_element_by_xpath(xpath)
-    
-    def doubleClick(self):
-        self.session.doubleClick(self.element)
-    
-    def click(self):
-        self.element.click()
+    def doubleClick(self) -> None:
+        self.session.doubleClick(self)
