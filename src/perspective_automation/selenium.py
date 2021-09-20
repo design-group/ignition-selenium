@@ -20,22 +20,35 @@ class Credentials:
     password: None
 
 
-class SELECT_ALL_KEYS(Enum):
+class SelectAllKeys(Enum):
     LINUX = Keys.CONTROL + "a"
     WINDOWS = Keys.CONTROL + "a"
     DARWIN = Keys.COMMAND + "a"
 
+
+def getChromeDriver(mobile: bool=False) -> webdriver:
+    chrome_options = webdriver.ChromeOptions()
+
+    if mobile:
+        mobile_emulation = {"deviceName": "iPhone X"}
+        chrome_options.add_experimental_option(
+            "mobileEmulation", mobile_emulation)
+
+    return webdriver.Chrome(options=chrome_options)
+
+def getSafariDriver(mobile: bool=False) -> webdriver:
+    if mobile:
+        return webdriver.Safari(desired_capabilities={"safari:useSimulator": True, "platformName": "ios"})
+    return webdriver.Safari()
+
+class Browsers(Enum):
+    GOOGLE_CHROME = getChromeDriver
+    SAFARI = getSafariDriver
+
 class Session():
-    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, device_type=None) -> None:
+    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, browser: Browsers =  Browsers.GOOGLE_CHROME, mobile: bool=False) -> None:
 
-        self.chrome_options = webdriver.ChromeOptions()
-
-        if device_type:
-            mobile_emulation = {"deviceName": device_type}
-            self.chrome_options.add_experimental_option(
-                "mobileEmulation", mobile_emulation)
-
-        self.driver = webdriver.Chrome(options=self.chrome_options)
+        self.driver = browser(mobile)
         self.base_url = base_url
         self.original_page_url = base_url + page_path
         self.navigateToUrl(self.original_page_url)
@@ -44,8 +57,10 @@ class Session():
         self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
 
+
+
     def getSelectAllKeys(self) -> Keys:
-        return SELECT_ALL_KEYS[self.platform_version]
+        return SelectAllKeys[self.platform_version].value
 
     def navigateToUrl(self, url=None) -> None:
         self.driver.get(url or self.base_url)
@@ -59,6 +74,9 @@ class Session():
         except:
             raise Exception("Error waiting for element %s: %s" %
                             (locator, identifier))
+    
+    def close(self):
+        self.driver.quit()
 
     def login(self) -> None:
         # Wait for the login panel to be present
@@ -76,6 +94,7 @@ class Session():
 
         # Click the opening "CONTINUE TO LOG IN" button
         loginPanel.find_element_by_class_name("submit-button").click()
+        print("Clicked!")
 
         # Enter the username
         usernameField = self.waitForElement("username-field")

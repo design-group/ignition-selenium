@@ -36,6 +36,8 @@ def test_tubCalculator():
     if finalAddCount > startingAddCount:
         print("Test success!")
 
+    session.close()
+    
 if __name__ == "__main__":
    test_tubCalculator()
 

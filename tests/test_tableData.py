@@ -30,6 +30,7 @@ def test_tableData():
     operatorAssignedCheckbox.toggle()
 
     time.sleep(5)
+    session.close()
 if __name__ == "__main__":
    test_tableData()
 

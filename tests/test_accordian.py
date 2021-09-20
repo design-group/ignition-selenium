@@ -1,6 +1,6 @@
 import time
 from selenium.webdriver.common.by import By
-from perspective_automation.selenium import Session, Credentials
+from perspective_automation.selenium import Session, Credentials, Browsers
 from perspective_automation.components import View, Table, TextBox, Accordion
 
 def test_tableData():
@@ -20,8 +20,11 @@ def test_tableData():
 
     jobAccordian = Accordion(session, By.ID, "Operations.Jobs.Overview")
     jobAccordian.toggleBody(4)
-    
+
 
     time.sleep(5)
+
+    session.close()
+
 if __name__ == "__main__":
    test_tableData()
