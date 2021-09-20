@@ -13,8 +13,8 @@ from selenium.webdriver.remote.webelement import WebElement
 
 
 class AccordionHeaderType(Enum):
-    TEXT: 1
-    VIEW: 2
+    TEXT = 1
+    VIEW = 2
 
 
 class AccordionHeader(PerspectiveElement):

@@ -1,3 +1,4 @@
+from enum import Enum
 from dataclasses import dataclass
 from platform import system
 
@@ -19,12 +20,10 @@ class Credentials:
     password: None
 
 
-SELECT_ALL_KEY_DICT = {
-    "Linux": Keys.CONTROL + "a",
-    "Windows": Keys.CONTROL + "a",
-    "Darwin": Keys.COMMAND + "a"
-}
-
+class SELECT_ALL_KEYS(Enum):
+    LINUX = Keys.CONTROL + "a"
+    WINDOWS = Keys.CONTROL + "a"
+    DARWIN = Keys.COMMAND + "a"
 
 class Session():
     def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, device_type=None) -> None:
@@ -42,11 +41,11 @@ class Session():
         self.navigateToUrl(self.original_page_url)
         self.wait = WebDriverWait(self.driver, wait_timeout_in_seconds)
         self.credentials = credentials
-        self.platform_version = system()
+        self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
 
     def getSelectAllKeys(self) -> Keys:
-        return SELECT_ALL_KEY_DICT.get(self.platform_version)
+        return SELECT_ALL_KEYS[self.platform_version]
 
     def navigateToUrl(self, url=None) -> None:
         self.driver.get(url or self.base_url)
