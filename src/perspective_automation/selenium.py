@@ -1,77 +1,66 @@
+from enum import Enum
+from dataclasses import dataclass
 from platform import system
+
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver import ActionChains
-
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class ElementNotFoundException(Exception):
     pass
 
+@dataclass
+class Credentials:
+    username: None
+    password: None
 
-SELECT_ALL_KEY_DICT = {
-            "Linux": Keys.CONTROL + "a",
-            "Windows": Keys.CONTROL + "a",
-            "Darwin": Keys.COMMAND + "a"
-        }
+
+class SELECT_ALL_KEYS(Enum):
+    LINUX = Keys.CONTROL + "a"
+    WINDOWS = Keys.CONTROL + "a"
+    DARWIN = Keys.COMMAND + "a"
+
 class Session():
-    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials=None):
-        self.driver = webdriver.Chrome()
+    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, device_type=None) -> None:
+
+        self.chrome_options = webdriver.ChromeOptions()
+
+        if device_type:
+            mobile_emulation = {"deviceName": device_type}
+            self.chrome_options.add_experimental_option(
+                "mobileEmulation", mobile_emulation)
+
+        self.driver = webdriver.Chrome(options=self.chrome_options)
         self.base_url = base_url
         self.original_page_url = base_url + page_path
         self.navigateToUrl(self.original_page_url)
         self.wait = WebDriverWait(self.driver, wait_timeout_in_seconds)
         self.credentials = credentials
-        self.platform_version = system()
-        self.select_all_keys = self.selectAllKeys()
-        self.action = ActionChains(self.driver)
-    
-    
-    def selectAllKeys(self) -> Keys:
-        return SELECT_ALL_KEY_DICT.get(self.platform_version)
+        self.platform_version = system().upper()
+        self.select_all_keys = self.getSelectAllKeys()
 
-    def navigateToUrl(self, url = None):
+    def getSelectAllKeys(self) -> Keys:
+        return SELECT_ALL_KEYS[self.platform_version]
+
+    def navigateToUrl(self, url=None) -> None:
         self.driver.get(url or self.base_url)
 
-    def waitForElement(self, identifier, locator=By.CLASS_NAME, multiple=False, root_element: WebElement=None, strict_identifier=False):
-        if root_element:
-            if not isinstance(root_element, WebElement):
-                root_element = root_element.element
-            
-            xPathDict = {
-                By.CLASS_NAME: "@class",
-                By.ID: "@id"
-            }
-
-            if root_element.get_attribute("id"):
-                parentIdentifier =  "//*[@id='%s']" % root_element.get_attribute("id")
-            elif root_element.get_attribute("class"):
-                parentIdentifier = "//*[@class='%s']" % root_element.get_attribute("class")
-            
-            identifierBase = "%s//*[%s='%s']" if strict_identifier else "%s//*[contains(%s, '%s')]"
-            identifier = identifierBase % (parentIdentifier, xPathDict.get(locator), identifier)
-            locator = By.XPATH
-
-        # print("Waiting for element by %s: %s" % (locator, identifier))
+    def waitForElement(self, identifier, locator=By.CLASS_NAME) -> WebElement:
         try:
-            self.wait.until(ec.presence_of_element_located((locator, identifier)))
+            return self.wait.until(ec.presence_of_element_located((locator, identifier)))
         except TimeoutException:
-            raise ElementNotFoundException("Unable to verify presence of %s: %s" % (locator, identifier))
+            raise ElementNotFoundException(
+                "Unable to verify presence of %s: %s" % (locator, identifier))
         except:
-             raise Exception("Error waiting for element %s: %s" % (locator, identifier))
+            raise Exception("Error waiting for element %s: %s" %
+                            (locator, identifier))
 
-
-        if not multiple:    
-            return self.driver.find_element(locator, identifier)
-        else:
-            return self.driver.find_elements(locator, identifier)
-
-    def login(self):
+    def login(self) -> None:
         # Wait for the login panel to be present
         try:
             loginPanel = self.waitForElement("login-panel")
@@ -81,7 +70,8 @@ class Session():
             if trialPanel:
                 self.resetTrial()
                 self.navigateToUrl(self.original_page_url)
-                self.waitForElement("login-panel").find_element_by_class_name("submit-button").click()
+                self.waitForElement(
+                    "login-panel").find_element_by_class_name("submit-button").click()
                 return
 
         # Click the opening "CONTINUE TO LOG IN" button
@@ -89,22 +79,19 @@ class Session():
 
         # Enter the username
         usernameField = self.waitForElement("username-field")
-        usernameField.send_keys(self.credentials.get('username'))
+        usernameField.send_keys(self.credentials.username)
         self.waitForElement("submit-button").click()
 
         # Enter the password
         passwordField = self.waitForElement("password-field")
-        passwordField.send_keys(self.credentials.get('password'))
+        passwordField.send_keys(self.credentials.password)
         self.waitForElement("submit-button").click()
 
-    def open_gateway_webpage(self):
+    def openGatewayWebpage(self):
         self.navigateToUrl("%s/web/home" % self.base_url)
 
     def resetTrial(self):
-        self.open_gateway_webpage()
+        self.openGatewayWebpage()
         self.waitForElement("login-link", By.ID).click()
         self.login()
         self.waitForElement("reset-trial-anchor", By.ID).click()
-    
-    def doubleClick(self, element):
-        self.action.double_click(element).perform()

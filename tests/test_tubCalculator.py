@@ -1,11 +1,12 @@
 import time
 from selenium.webdriver.common.by import By
-from perspective_automation.selenium import Session, Label, TextBox, TextArea, NumericInput, Dropdown, Button
+from perspective_automation.selenium import Session, Credentials
+from perspective_automation.components import Label, TextBox, TextArea, NumericInput, Dropdown, Button
 
 def test_tubCalculator():
     BASE_URL = "http://localhost"
     PAGE_PATH = "/data/perspective/client/MES/component-test-fixture"
-    CREDENTIALS = {"username":"RATester01", "password":"N3verp@tch2021"}
+    CREDENTIALS = Credentials("RATester01", "N3verp@tch2021")
     session = Session(BASE_URL, PAGE_PATH, 10, CREDENTIALS)
     session.login()
 
@@ -21,6 +22,7 @@ def test_tubCalculator():
     dropdown = Dropdown(session, By.ID, "tubCalculatorDropdown")
     dropdown.setValue("Tub30")
 
+    
     inchesToAdd = NumericInput(session, By.ID, "inchesToAdd")
     inchesToAdd.setValue(0.1)
 
