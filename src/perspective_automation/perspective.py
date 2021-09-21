@@ -15,7 +15,6 @@ class ComponentInteractionException(Exception):
 class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None):
         self.session = session
-
         if not element:
             if parent:
                 element = Component(session, element=parent).waitForElement(
