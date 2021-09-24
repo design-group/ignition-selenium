@@ -62,7 +62,7 @@ class Session():
     def navigateToUrl(self, url=None) -> None:
         self.driver.get(url or self.base_url)
 
-    def waitForElement(self, identifier, locator=By.CLASS_NAME) -> WebElement:
+    def waitForElement(self, identifier, locator=By.CLASS_NAME, timeout_in_seconds=None) -> WebElement:
         try:
             return self.wait.until(ec.presence_of_element_located((locator, identifier)))
         except TimeoutException:
