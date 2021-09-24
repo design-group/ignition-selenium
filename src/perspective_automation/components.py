@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import Union
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from perspective_automation.perspective import (Component,
                                                 ComponentInteractionException,
@@ -145,7 +145,7 @@ class NumericInput(PerspectiveComponent):
         self.getInputBox()
         try:
             invalidInputBox = self.find_element_by_partial_class_name("psc-Entry/Invalid")
-        except ElementNotFoundException:
+        except (ElementNotFoundException, NoSuchElementException):
             return InputState.VALID
         except Exception as e:
             raise ComponentInteractionException("Unable to determine input state: %s" % e)
