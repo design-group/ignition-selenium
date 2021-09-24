@@ -6,9 +6,9 @@ How to install:
 pip install git+ssh://git@git.ejgallo.com/operational_technology/ignition/infrastructure/test-automation.git#egg=perspective_automation
 ```
 
-How to install a version from a specific branch:
+To install a version from a specific branch, add `@branch_name` after `test-automation.git`. For example, when cloning from a branch called `my_branch`:
 ```
-pip install git+ssh://git@git.ejgallo.com/operational_technology/ignition/infrastructure/test-automation.git@branch_name#egg=perspective_automation
+pip install git+ssh://git@git.ejgallo.com/operational_technology/ignition/infrastructure/test-automation.git@my_branch#egg=perspective_automation
 ```
 
 ## Common Issues
