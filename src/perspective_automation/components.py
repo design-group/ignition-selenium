@@ -148,7 +148,7 @@ class NumericInput(PerspectiveComponent):
         except ElementNotFoundException:
             return InputState.VALID
         except Exception as e:
-            raise ComponentInteractionException("Unable to determin input state: %s" % e)
+            raise ComponentInteractionException("Unable to determine input state: %s" % e)
         
         if invalidInputBox:
             return InputState.INVALID
