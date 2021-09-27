@@ -18,9 +18,13 @@ from selenium.webdriver.remote.webelement import WebElement
 class InputState(Enum):
     INVALID = False
     VALID = True
+
 class AccordionHeaderType(Enum):
     TEXT = 1
     VIEW = 2
+
+class InvalidHeaderTypeException(Exception):
+    pass
 
 class AccordionHeader(PerspectiveElement):
     def getHeaderType(self) -> AccordionHeaderType:
@@ -38,6 +42,13 @@ class AccordionHeader(PerspectiveElement):
         self.click()
         return self.isExpanded
 
+    def getHeaderText(self) -> str:
+        """
+        Checks if the Accordion Header is a text header, and if so, returns the text inside.
+        """
+        if self.getHeaderType() != AccordionHeaderType.TEXT:
+            raise InvalidHeaderTypeException("Cannot get text of a non-text accordion header.")
+        return self.text
 
 class Accordion(PerspectiveComponent):
     def getHeaderElements(self) -> list[WebElement]:
