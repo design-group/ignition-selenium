@@ -144,7 +144,7 @@ class NumericInput(PerspectiveComponent):
     def getInputState(self) -> InputState:
         self.getInputBox()
         try:
-            invalidInputBox = self.find_element_by_partial_class_name("psc-Entry/Invalid")
+            invalidInputBox = self.find_element_by_partial_class_name("psc-")
         except (ElementNotFoundException, NoSuchElementException):
             return InputState.VALID
         except Exception as e:
