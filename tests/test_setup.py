@@ -1,6 +1,6 @@
 import pytest
 import docker
-import requests, time
+import time
 from perspective_automation.perspective import Component
 from perspective_automation.selenium import Session, Credentials
 from selenium.webdriver.common.by import By
@@ -28,26 +28,23 @@ class DockerTestingEnvironment():
                                         }
                         , detach=True)
         container.reload()
+        # Stall to allow the container to reload
+        time.sleep(10)
         return container
 
     def enableQuickStart(self):
-        session = Session(self.url, "/", 10, credentials=self.credentials)
+        session = Session(self.url, "/", 10, credentials=self.credentials, headless=True)
         quickStartContainer = Component(session,  By.ID, "quickStartOverlayContainer", timeout_in_seconds=60)
 
-
-        quickStartButton = quickStartContainer.waitForElement("button primary-action start")
+        quickStartButton = quickStartContainer.find_element_by_partial_class_name("primary-action")
         quickStartButton.click()
 
-        loginButton = quickStartContainer.waitForElement("button primary-action")
+        loginButton = quickStartContainer.find_element_by_partial_class_name("primary-action")
         loginButton.click()
 
         session.login()
 
         session.waitForElement("quickstart-panel", timeout_in_seconds=60)
-
-        session.resetTrial()
-
-
 
 
     def getContainerPort(self, container):
@@ -57,14 +54,10 @@ class DockerTestingEnvironment():
     def stop(self):
         self.container.remove(force=True)
 
-
-# @pytest.fixture(autouse=True, scope='session')
-def testing_container():
+def test_container():
     container = DockerTestingEnvironment()
     container.enableQuickStart()
-
-    # yield
-    # container.stop()
+    container.stop()
 
 if __name__ == "__main__":
-    testing_container()
+    pytest.main()
