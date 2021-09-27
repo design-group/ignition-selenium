@@ -13,14 +13,14 @@ class ComponentInteractionException(Exception):
     pass
 
 class Component(WebElement):
-    def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None):
+    def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         self.session = session
         if not element:
             if parent:
                 element = Component(session, element=parent).waitForElement(
-                    locator, identifier)
+                    locator, identifier, timeout_in_seconds=timeout_in_seconds)
             else:
-                element = self.session.waitForElement(identifier, locator)
+                element = self.session.waitForElement(identifier, locator, timeout_in_seconds=timeout_in_seconds)
 
         # I am not sure why w3c has to be true or this _.find_element_by_xxx fails?
         super().__init__(element.parent, element.id, w3c=True)

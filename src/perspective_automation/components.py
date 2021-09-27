@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import Union
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from perspective_automation.perspective import (Component,
                                                 ComponentInteractionException,
@@ -15,6 +15,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
 
+class InputState(Enum):
+    INVALID = False
+    VALID = True
 class AccordionHeaderType(Enum):
     TEXT = 1
     VIEW = 2
@@ -132,9 +135,28 @@ class Label(PerspectiveComponent):
         return self.text
 
 class NumericInput(PerspectiveComponent):
+    
     def getInputBox(self) -> WebElement:
         self.find_element_by_class_name("ia-numeral-input").click()
         return self.find_element_by_class_name("ia-numeral-input")
+
+
+    def getInputState(self) -> InputState:
+        self.getInputBox()
+        try:
+            invalidInputBox = self.find_element_by_partial_class_name("psc-")
+        except (ElementNotFoundException, NoSuchElementException):
+            return InputState.VALID
+        except Exception as e:
+            raise ComponentInteractionException("Unable to determine input state: %s" % e)
+        
+        if invalidInputBox:
+            return InputState.INVALID
+        
+        return InputState.VALID
+
+    def isInputValid(self):
+        return self.getInputState() == InputState.VALID
 
     def send_keys(self, keys: str) -> None:
         self.getInputBox().send_keys(keys)
