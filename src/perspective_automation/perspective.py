@@ -51,6 +51,9 @@ class Component(WebElement):
         raiseable_exception = ElementNotFoundException(
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_elements(locator, identifier), timeout_in_seconds, raiseable_exception)
+    
+    def getScreenshot(self):
+        return self.screenshot_as_png()
 
 
 class PerspectiveComponent(Component):

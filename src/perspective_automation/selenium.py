@@ -23,7 +23,7 @@ class SelectAllKeys(Enum):
     WINDOWS = Keys.CONTROL + "a"
     DARWIN = Keys.COMMAND + "a"
 
-def getChromeDriver(mobile: bool=False) -> webdriver:
+def getChromeDriver(mobile: bool=False, headless: bool=True) -> webdriver:
     chrome_options = webdriver.ChromeOptions()
 
     if mobile:
@@ -31,11 +31,15 @@ def getChromeDriver(mobile: bool=False) -> webdriver:
         chrome_options.add_experimental_option(
             "mobileEmulation", mobile_emulation)
 
+    if headless:
+        chrome_options.add_argument("--headless")
+
     return webdriver.Chrome(options=chrome_options)
 
-def getSafariDriver(mobile: bool=False) -> webdriver:
+def getSafariDriver(mobile: bool=False, headless: bool=True) -> webdriver:
     if mobile:
         return webdriver.Safari(desired_capabilities={"safari:useSimulator": True, "platformName": "ios"})
+    
     return webdriver.Safari()
 
 class Browsers(Enum):
@@ -43,7 +47,7 @@ class Browsers(Enum):
     SAFARI = getSafariDriver
 
 class Session():
-    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, browser: Browsers =  Browsers.GOOGLE_CHROME, mobile: bool=False) -> None:
+    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, browser: Browsers =  Browsers.GOOGLE_CHROME, mobile: bool=False, headless: bool=True) -> None:
 
         self.driver = browser(mobile)
         self.base_url = base_url
@@ -60,11 +64,21 @@ class Session():
         return SelectAllKeys[self.platform_version].value
 
     def navigateToUrl(self, url=None) -> None:
+        try:
+            reloadButton = self.waitForElement("reload-button", By.ID)
+            reloadButton.click()
+        except:
+            pass
+
         self.driver.get(url or self.base_url)
 
     def waitForElement(self, identifier, locator=By.CLASS_NAME, timeout_in_seconds=None) -> WebElement:
         try:
-            return self.wait.until(ec.presence_of_element_located((locator, identifier)))
+            locatorMethod = ec.presence_of_element_located((locator, identifier))
+            if timeout_in_seconds:
+                return WebDriverWait(self.driver, timeout_in_seconds).until(locatorMethod)
+
+            return self.wait.until(locatorMethod)
         except TimeoutException:
             raise ElementNotFoundException(
                 "Unable to verify presence of %s: %s" % (locator, identifier))
