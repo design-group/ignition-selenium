@@ -162,8 +162,7 @@ class NumericInput(PerspectiveComponent):
         self.getInputBox().send_keys(keys)
 
     def clearValue(self) -> None:
-        self.send_keys(self.session.select_all_keys)
-        self.send_keys(Keys.DELETE)
+        self.send_keys(self.session.select_all_keys + Keys.DELETE)
 
     def setValue(self, value: Union[int, float], withSubmit: bool = False, replace: bool = True) -> None:
         if replace:
