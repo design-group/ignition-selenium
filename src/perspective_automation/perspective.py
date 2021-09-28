@@ -12,6 +12,16 @@ class ElementNotFoundException(Exception):
 class ComponentInteractionException(Exception):
     pass
 
+def Invasive(*args, **kwargs):
+    def wrapper(func):
+        print("Begin Invasive Wrapper")
+        if kwargs.get("allow_invasive", False) == True:
+            func()
+        else:
+            print("Skipped funciton \"%s\" because invasive tests are disallowed." % func.__name__)
+        print("End Invasive Wrapper")
+    return wrapper
+
 class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         self.session = session
