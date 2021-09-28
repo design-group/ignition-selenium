@@ -23,9 +23,6 @@ class AccordionHeaderType(Enum):
     TEXT = 1
     VIEW = 2
 
-class InvalidHeaderTypeException(Exception):
-    pass
-
 class AccordionHeader(PerspectiveElement):
     def getHeaderType(self) -> AccordionHeaderType:
         if self.find_element_by_class_name("ia_accordionComponent__header__text"):
@@ -47,7 +44,7 @@ class AccordionHeader(PerspectiveElement):
         Checks if the Accordion Header is a text header, and if so, returns the text inside.
         """
         if self.getHeaderType() != AccordionHeaderType.TEXT:
-            raise InvalidHeaderTypeException("Cannot get text of a non-text accordion header.")
+            raise ComponentInteractionException("Cannot get text of a non-text accordion header.")
         return self.text
 
 class Accordion(PerspectiveComponent):
