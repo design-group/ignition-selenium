@@ -8,14 +8,21 @@ from selenium.webdriver.common.by import By
 DEFAULT_IGNITION_PORT="8088/tcp"
 IGNITION_DOCKER_IMAGE="inductiveautomation/ignition:latest"
 
-class DockerTestingEnvironment():
+class DockerTestingEnvironment:
 
-    def __init__(self) -> None:
+    def __enter__(self):
         self.client = docker.from_env()
         self.credentials = Credentials("admin", "password")
         self.container = self.getContainerImage()
         self.hostPort = self.getContainerPort(self.container)
         self.url = "http://localhost:%s" % self.hostPort
+
+        return self
+
+    def __exit__(self ,type, value, traceback) -> None:
+        self.container.stop()
+        self.container.remove()
+        
 
     def getContainerImage(self):
         container = self.client.containers.run(image=IGNITION_DOCKER_IMAGE
@@ -33,7 +40,7 @@ class DockerTestingEnvironment():
         return container
 
     def enableQuickStart(self):
-        session = Session(self.url, "/", 10, credentials=self.credentials, headless=True)
+        session = Session(self.url, "/", 10, credentials=self.credentials, headless=True, browser_executable_path="/usr/local/Caskroom/chromedriver/93.0.4577.63/chromedriver")
         quickStartContainer = Component(session,  By.ID, "quickStartOverlayContainer", timeout_in_seconds=60)
 
         quickStartButton = quickStartContainer.find_element_by_partial_class_name("primary-action")
@@ -49,15 +56,18 @@ class DockerTestingEnvironment():
 
     def getContainerPort(self, container):
         ports = container.ports
+
+        if len(ports.get(DEFAULT_IGNITION_PORT)) == 0:
+            container.reload()
+
         return ports.get(DEFAULT_IGNITION_PORT)[0]['HostPort']
 
     def stop(self):
         self.container.remove(force=True)
 
 def test_container():
-    container = DockerTestingEnvironment()
-    container.enableQuickStart()
-    container.stop()
+    with DockerTestingEnvironment() as container:
+        container.enableQuickStart()
 
 if __name__ == "__main__":
     pytest.main()
