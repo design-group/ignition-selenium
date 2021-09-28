@@ -23,21 +23,25 @@ class SelectAllKeys(Enum):
     WINDOWS = Keys.CONTROL + "a"
     DARWIN = Keys.COMMAND + "a"
 
-def getChromeDriver(mobile: bool=False, headless: bool=True) -> webdriver:
+def getChromeDriver(**kwargs) -> webdriver:
     chrome_options = webdriver.ChromeOptions()
 
-    if mobile:
+    if kwargs.get('mobile'):
         mobile_emulation = {"deviceName": "iPhone X"}
         chrome_options.add_experimental_option(
             "mobileEmulation", mobile_emulation)
 
-    if headless:
+    if kwargs.get('headless', True):
         chrome_options.add_argument("--headless")
 
-    return webdriver.Chrome(options=chrome_options)
 
-def getSafariDriver(mobile: bool=False, headless: bool=True) -> webdriver:
-    if mobile:
+    return webdriver.Chrome(
+                        executable_path=kwargs.get('browser_executable_path')
+                        , options=chrome_options
+                        )
+
+def getSafariDriver(**kwargs) -> webdriver:
+    if kwargs.get('mobile'):
         return webdriver.Safari(desired_capabilities={"safari:useSimulator": True, "platformName": "ios"})
     
     return webdriver.Safari()
@@ -47,14 +51,14 @@ class Browsers(Enum):
     SAFARI = getSafariDriver
 
 class Session():
-    def __init__(self, base_url, page_path, wait_timeout_in_seconds, credentials: Credentials = None, browser: Browsers =  Browsers.GOOGLE_CHROME, mobile: bool=False, headless: bool=True) -> None:
+    def __init__(self, base_url, page_path, wait_timeout_in_seconds, **kwargs) -> None:
 
-        self.driver = browser(mobile)
+        self.driver = kwargs.get('browser', Browsers.GOOGLE_CHROME)(**kwargs)
         self.base_url = base_url
         self.original_page_url = base_url + page_path
         self.navigateToUrl(self.original_page_url)
         self.wait = WebDriverWait(self.driver, wait_timeout_in_seconds)
-        self.credentials = credentials
+        self.credentials = kwargs.get('credentials')
         self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
 
