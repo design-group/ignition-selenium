@@ -36,7 +36,7 @@ def getChromeDriver(**kwargs) -> webdriver:
 
 
     return webdriver.Chrome(
-                        executable_path=kwargs.get('browser_executable_path')
+                        executable_path=kwargs.get('browser_executable_path', "chromedriver")
                         , options=chrome_options
                         )
 
