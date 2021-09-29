@@ -34,11 +34,13 @@ def getChromeDriver(**kwargs) -> webdriver:
     if kwargs.get('headless', True):
         chrome_options.add_argument("--headless")
 
-
-    return webdriver.Chrome(
-                        executable_path=kwargs.get('browser_executable_path', "chromedriver")
-                        , options=chrome_options
-                        )
+    if kwargs.get('browser_executable_path'):
+        return webdriver.Chrome(
+                            executable_path=kwargs.get('browser_executable_path')
+                            , options=chrome_options
+                            )
+    else:
+        return webdriver.Chrome(options=chrome_options)
 
 def getSafariDriver(**kwargs) -> webdriver:
     if kwargs.get('mobile'):
