@@ -1,10 +1,11 @@
+import pytest
+from decorator import decorator
 from perspective_automation.selenium import Session
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
-from decorator import decorator
 
 
 class ElementNotFoundException(Exception):
@@ -17,11 +18,11 @@ def Invasive(func):
     def wrapper(func, *args, **kwargs):
         config: dict[str] = args[0]
         if config == None:
-            print("Skipped function \"%s\" - Config file could not be read." % func.__name__)
-        elif config.get("allow_invasive") == True:
-            func(*args, **kwargs)
+            pytest.skip("Config file could not be read.")
+        elif config.get("allow_invasive") != True:
+            pytest.skip("Invasive tests are not allowed by config.")
         else:
-            print("Skipped function \"%s\" - Invasive tests are not allowed by config." % (func.__name__))
+            func(*args, **kwargs)
     return decorator(wrapper, func)
 
 class Component(WebElement):
