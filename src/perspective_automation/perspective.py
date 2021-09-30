@@ -4,6 +4,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
+from decorator import decorator
 
 
 class ElementNotFoundException(Exception):
@@ -12,31 +13,16 @@ class ElementNotFoundException(Exception):
 class ComponentInteractionException(Exception):
     pass
 
-class _Invasive(object):
-    def __init__(self, func, allow_invasive:bool=False):
-        self.func = func
-        self.allow_invasive = allow_invasive
-    
-    def __call__(self):
-        print("Begin _Invasive __call__")
-        if self.allow_invasive:
-            self.func()
+def Invasive(func):
+    def wrapper(func, *args, **kwargs):
+        config: dict[str] = args[0]
+        if config == None:
+            print("Skipped function \"%s\" - Config file could not be read." % func.__name__)
+        elif config.get("allow_invasive") == True:
+            func(*args, **kwargs)
         else:
-            print("Skipped funciton \"%s\" because invasive tests are disallowed." % self.func.__name__)
-        print("End _Invasive __call__")
-
-def Invasive(func=None, allow_invasive:bool=False):
-    print("Begin Invasive")
-    if func:
-        print("End Invasive - return _Invasive(func)")
-        return _Invasive(func)
-    else:
-        def wrapper(func):
-            print("Invasive wrapper()")
-            return _Invasive(func, allow_invasive)
-        print("End Invasive - return wrapper")
-        return wrapper
-        
+            print("Skipped function \"%s\" - Invasive tests are not allowed by config." % (func.__name__))
+    return decorator(wrapper, func)
 
 class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
