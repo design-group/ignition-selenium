@@ -19,7 +19,7 @@ def Invasive(func):
         config: dict[str] = args[0]
         if not config:
             pytest.skip("Config file could not be read.")
-        elif config.get("allow_invasive") != True:
+        elif not config.get("allow_invasive"):
             pytest.skip("Invasive tests are not allowed by config.")
         else:
             func(*args, **kwargs)
