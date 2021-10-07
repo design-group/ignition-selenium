@@ -208,12 +208,12 @@ class TabMenu(PerspectiveComponent):
     def getActiveTab(self) -> WebElement:
         return self.find_element_by_partial_class_name(self.active_tab_class_name)
 
-    def switchToTab(self, name: str):
+    def switchToTab(self, name: str) -> WebElement:
         tabs = self.getTabs()
         for tab in tabs:
             if tab.text == name:
                 tab.click()
-                return
+                return tab
         raise ElementNotFoundException("No tab exists with the name \"%s\"." % name)
 
 
