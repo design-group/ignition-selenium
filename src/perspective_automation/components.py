@@ -191,6 +191,27 @@ class Popup(Component):
     def close(self) -> None:
         self.find_element_by_class_name("close-icon").click()
 
+class TabMenu(PerspectiveComponent):
+    tab_class_name = "tab-menu-item"
+
+    def getTabs(self) -> list[WebElement]:
+        return self.find_elements_by_partial_class_name(self.tab_class_name)
+
+    def getTabNames(self) -> list[str]:
+        tabs = self.getTabs()
+        tabNames = []
+        for tab in tabs:
+            tabNames.append(tab.text)
+        return tabNames
+
+    def switchToTab(self, name: str):
+        tabs = self.getTabs()
+        for tab in tabs:
+            if tab.text == name:
+                tab.click()
+                return
+        raise ElementNotFoundException("No tab exists with the name \"%s\"." % name)
+
 
 class TableRowGroup(PerspectiveElement):
     def getDataId(self) -> str:
