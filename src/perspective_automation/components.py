@@ -191,7 +191,7 @@ class Popup(Component):
     def close(self) -> None:
         self.find_element_by_class_name("close-icon").click()
 
-class TabMenu(PerspectiveComponent):
+class TabContainer(PerspectiveComponent):
     tab_class_name = "tab-menu-item"
     active_tab_class_name = "tab-active"
     tab_container_content_class_name = "ia_tabContainerComponent__content"
@@ -221,6 +221,7 @@ class TabMenu(PerspectiveComponent):
         containerContent = PerspectiveElement(self.session, self.find_element_by_partial_class_name(self.tab_container_content_class_name))
         elemInContainer = containerContent.getFirstChild()
         return elemInContainer
+
 
 class TableRowGroup(PerspectiveElement):
     def getDataId(self) -> str:
