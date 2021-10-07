@@ -193,6 +193,7 @@ class Popup(Component):
 
 class TabMenu(PerspectiveComponent):
     tab_class_name = "tab-menu-item"
+    active_tab_class_name = "tab-active"
 
     def getTabs(self) -> list[WebElement]:
         return self.find_elements_by_partial_class_name(self.tab_class_name)
@@ -203,6 +204,9 @@ class TabMenu(PerspectiveComponent):
         for tab in tabs:
             tabNames.append(tab.text)
         return tabNames
+
+    def getActiveTab(self) -> WebElement:
+        return self.find_element_by_partial_class_name(self.active_tab_class_name)
 
     def switchToTab(self, name: str):
         tabs = self.getTabs()
