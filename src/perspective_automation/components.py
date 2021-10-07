@@ -194,6 +194,7 @@ class Popup(Component):
 class TabMenu(PerspectiveComponent):
     tab_class_name = "tab-menu-item"
     active_tab_class_name = "tab-active"
+    tab_container_content_class_name = "ia_tabContainerComponent__content"
 
     def getTabs(self) -> list[WebElement]:
         return self.find_elements_by_partial_class_name(self.tab_class_name)
@@ -216,6 +217,10 @@ class TabMenu(PerspectiveComponent):
                 return tab
         raise ElementNotFoundException("No tab exists with the name \"%s\"." % name)
 
+    def getContent(self) -> WebElement:
+        containerContent = PerspectiveElement(self.session, self.find_element_by_partial_class_name(self.tab_container_content_class_name))
+        elemInContainer = containerContent.getFirstChild()
+        return elemInContainer
 
 class TableRowGroup(PerspectiveElement):
     def getDataId(self) -> str:
