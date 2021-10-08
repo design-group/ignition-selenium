@@ -209,11 +209,16 @@ class Table(PerspectiveComponent):
     row_group_class_name = "ia_table__body__rowGroup"
     cell_class_name = "ia_table__cell"
     table_filter_container_class_name = "ia_tableComponent__filterContainer"
+    page_class_name = "ia_pager__page"
+    active_page_class_name = "ia_pager__page--active"
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element).getDataId() for element in headerElements]
 
+    def getCurrentPage(self) -> int:
+        activePageElem: WebElement = self.find_element_by_class_name(self.active_page_class_name)
+        return activePageElem.text
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
