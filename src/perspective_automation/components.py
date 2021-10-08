@@ -208,10 +208,47 @@ class TableCell(PerspectiveElement):
 class _Pager(PerspectiveComponent):
     page_class_name = "ia_pager__page"
     active_page_class_name = "ia_pager__page--active"
+    next_page_class_name = "next"
+    prev_page_class_name = "prev"
+    first_page_class_name = "first"
+    last_page_class_name = "last"
+    disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
+    disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
 
     def getCurrentPage(self) -> int:
-        activePageElem: WebElement = self.find_element_by_class_name(self.active_page_class_name)
+        activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
         return int(activePageElem.text)
+    
+    def nextPage(self) -> int:
+        nextButton = self.waitForElement(By.CLASS_NAME, self.next_page_class_name)
+        if str(nextButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
+            nextButton.click()
+        else:
+            """Cannot go to next page, already on last page"""
+        return self.getCurrentPage()
+
+    def prevPage(self) -> int:
+        prevButton = self.waitForElement(By.CLASS_NAME, self.prev_page_class_name)
+        if str(prevButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
+            prevButton.click()
+        else:
+            """Cannot go to previous page, already on first page"""
+        return self.getCurrentPage()
+    
+    def firstPage(self) -> None:
+        firstButton = self.waitForElement(By.CLASS_NAME, self.first_page_class_name)
+        if str(firstButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
+            firstButton.click()
+        else:
+            """Already on first page"""
+    
+    def lastPage(self) -> None:
+        lastButton = self.waitForElement(By.CLASS_NAME, self.last_page_class_name)
+        if str(lastButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
+            lastButton.click()
+        else:
+            """Already on last page"""
+        
 
 class Table(PerspectiveComponent):
     header_cell_class_name = "ia_table__head__header__cell"
@@ -219,18 +256,27 @@ class Table(PerspectiveComponent):
     cell_class_name = "ia_table__cell"
     table_filter_container_class_name = "ia_tableComponent__filterContainer"
     pager_class_name = "ia_pager"
-    pager = None
+    _pager = None
 
     def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
-        self.pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds))
+        self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds))
+
+    # _Pager Methods
+    def getCurrentPage(self) -> int:
+        return self._pager.getCurrentPage()
+    def nextPage(self) -> int:
+        return self._pager.nextPage()
+    def prevPage(self) -> int:
+        return self._pager.prevPage()
+    def firstPage(self) -> None:
+        return self._pager.firstPage()
+    def lastPage(self) -> None:
+        return self._pager.lastPage()
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element).getDataId() for element in headerElements]
-
-    def getCurrentPage(self) -> int:
-        return self.pager.getCurrentPage()
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
