@@ -204,21 +204,33 @@ class TableCell(PerspectiveElement):
     def getData(self) -> str:
         return self.find_element_by_class_name("content").text
 
+
+class _Pager(PerspectiveComponent):
+    page_class_name = "ia_pager__page"
+    active_page_class_name = "ia_pager__page--active"
+
+    def getCurrentPage(self) -> int:
+        activePageElem: WebElement = self.find_element_by_class_name(self.active_page_class_name)
+        return int(activePageElem.text)
+
 class Table(PerspectiveComponent):
     header_cell_class_name = "ia_table__head__header__cell"
     row_group_class_name = "ia_table__body__rowGroup"
     cell_class_name = "ia_table__cell"
     table_filter_container_class_name = "ia_tableComponent__filterContainer"
-    page_class_name = "ia_pager__page"
-    active_page_class_name = "ia_pager__page--active"
+    pager_class_name = "ia_pager"
+    pager = None
+
+    def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
+        super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
+        self.pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds))
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element).getDataId() for element in headerElements]
 
     def getCurrentPage(self) -> int:
-        activePageElem: WebElement = self.find_element_by_class_name(self.active_page_class_name)
-        return activePageElem.text
+        return self.pager.getCurrentPage()
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
