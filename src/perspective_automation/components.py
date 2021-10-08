@@ -9,7 +9,7 @@ from perspective_automation.perspective import (Component,
                                                 PerspectiveComponent,
                                                 PerspectiveElement,
                                                 ElementNotFoundException)
-from perspective_automation.selenium import Session
+from perspective_automation.selenium import Session, SelectAllKeys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
@@ -214,12 +214,14 @@ class _Pager(PerspectiveComponent):
     last_page_class_name = "last"
     disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
     disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
+    jump_field_class_name = "ia_pager__jump"
 
     def getCurrentPage(self) -> int:
         activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
         return int(activePageElem.text)
     
     def nextPage(self) -> int:
+        # TODO: update for tables with < 10 pages
         nextButton = self.waitForElement(By.CLASS_NAME, self.next_page_class_name)
         if str(nextButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
             nextButton.click()
@@ -228,6 +230,7 @@ class _Pager(PerspectiveComponent):
         return self.getCurrentPage()
 
     def prevPage(self) -> int:
+        # TODO: update for tables with < 10 pages
         prevButton = self.waitForElement(By.CLASS_NAME, self.prev_page_class_name)
         if str(prevButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
             prevButton.click()
@@ -236,6 +239,7 @@ class _Pager(PerspectiveComponent):
         return self.getCurrentPage()
     
     def firstPage(self) -> None:
+        # TODO: update for tables with < 10 pages
         firstButton = self.waitForElement(By.CLASS_NAME, self.first_page_class_name)
         if str(firstButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
             firstButton.click()
@@ -243,11 +247,35 @@ class _Pager(PerspectiveComponent):
             """Already on first page"""
     
     def lastPage(self) -> None:
+        # TODO: update for tables with < 10 pages
         lastButton = self.waitForElement(By.CLASS_NAME, self.last_page_class_name)
         if str(lastButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
             lastButton.click()
         else:
             """Already on last page"""
+
+    def jumpToPage(self, page: int) -> None:
+        try:
+            # >= 10 pages
+            jumpTextField: WebElement = self.find_element_by_class_name(self.jump_field_class_name)
+            jumpTextField.clear()
+            jumpTextField.send_keys(str(page))
+            jumpTextField.send_keys(Keys.ENTER)
+        except (NoSuchElementException, ElementNotFoundException):
+            # < 10 pages
+            pageElems: list[WebElement] = self.find_elements_by_class_name(self.page_class_name)
+            for pageElem in pageElems:
+                if int(pageElem.text) == page:
+                    pageElem.click()
+        
+        if self.getCurrentPage() != page:
+            raise ComponentInteractionException("Table page index out of range.")
+            
+    # TODO: Get/Set page size
+
+    # TODO: Get number of pages
+
+    # TODO: Determine pager visibility
         
 
 class Table(PerspectiveComponent):
@@ -273,6 +301,8 @@ class Table(PerspectiveComponent):
         return self._pager.firstPage()
     def lastPage(self) -> None:
         return self._pager.lastPage()
+    def jumpToPage(self, page: int) -> None:
+        return self._pager.jumpToPage(page)
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
