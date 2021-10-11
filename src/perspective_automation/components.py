@@ -201,10 +201,7 @@ class TabContainer(PerspectiveComponent):
 
     def getTabNames(self) -> list[str]:
         tabs = self.getTabs()
-        tabNames = []
-        for tab in tabs:
-            tabNames.append(tab.text)
-        return tabNames
+        return [tab.text for tab in tabs]
 
     def getActiveTab(self) -> WebElement:
         return self.find_element_by_partial_class_name(self.active_tab_class_name)
