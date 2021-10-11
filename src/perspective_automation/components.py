@@ -322,7 +322,7 @@ class Table(PerspectiveComponent):
             rows.append(rowCells)
         return rows
 
-    def getData(self) -> list[dict]:
+    def getCurrentPageData(self) -> list[dict]:
         rowGroups = self.getRowData()
         rows = []
 
@@ -333,6 +333,27 @@ class Table(PerspectiveComponent):
 
             rows.append(rowData)
 
+        return rows
+    
+    def getAllData(self) -> list[dict]:
+        START_PAGE = self.getCurrentPage()
+        self.firstPage()
+        curPage = 1
+        rows: list[dict] = []
+
+        while True:
+            curPage = self.getCurrentPage()
+            curPageRows = self.getCurrentPageData()
+            rows.extend(curPageRows)
+
+            # temp
+            print(f"Page {curPage}")
+
+            # Loop until can't go to next page
+            if curPage == self.nextPage():
+                break
+
+        self.jumpToPage(START_PAGE)
         return rows
 
     def clickOnRow(self, rowIndex: int) -> None:
