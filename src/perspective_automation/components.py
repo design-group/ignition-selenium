@@ -405,9 +405,6 @@ class Table(PerspectiveComponent):
             curPageRows = self.getCurrentPageData()
             rows.extend(curPageRows)
 
-            # temp
-            print(f"Page {curPage}")
-
             # Loop until can't go to next page
             if curPage == self.nextPage():
                 break
