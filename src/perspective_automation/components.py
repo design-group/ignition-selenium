@@ -318,10 +318,19 @@ class _Pager(PerspectiveComponent):
            
         if self.getCurrentPage() != page:
             raise ComponentInteractionException("Table page index out of range.")
-            
-    # TODO: Get/Set page size
+    
+    def getNumPages(self) -> int:
+        if self.getPagerType() == PagerType.SIMPLE:
+            pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+            return len(pageElems)
+        else:
+            START_PAGE = self.getCurrentPage()
+            self.lastPage()
+            NUM_PAGES = self.getCurrentPage()
+            self.jumpToPage(START_PAGE)
+            return NUM_PAGES
 
-    # TODO: Get number of pages
+    # TODO: Get/Set page size
 
     # TODO: Determine pager visibility
         
@@ -351,6 +360,8 @@ class Table(PerspectiveComponent):
         return self._pager.lastPage()
     def jumpToPage(self, page: int) -> None:
         return self._pager.jumpToPage(page)
+    def getNumPages(self) -> int:
+        return self._pager.getNumPages()
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
