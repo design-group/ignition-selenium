@@ -304,7 +304,7 @@ class _Pager(PerspectiveComponent):
     def jumpToPage(self, page: int) -> None:
         if self.getPagerType() == PagerType.SIMPLE:
             # < 10 pages
-            pageElems: list[WebElement] = self.waitForElement(By.CLASS_NAME, self.page_class_name)
+            pageElems: list[WebElement] = self.waitForElements(By.CLASS_NAME, self.page_class_name)
             for pageElem in pageElems:
                 if int(pageElem.text) == page:
                     pageElem.click()
