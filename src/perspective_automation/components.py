@@ -191,6 +191,34 @@ class Popup(Component):
     def close(self) -> None:
         self.find_element_by_class_name("close-icon").click()
 
+class TabContainer(PerspectiveComponent):
+    tab_class_name = "tab-menu-item"
+    active_tab_class_name = "tab-active"
+    tab_container_content_class_name = "ia_tabContainerComponent__content"
+
+    def getTabs(self) -> list[WebElement]:
+        return self.find_elements_by_partial_class_name(self.tab_class_name)
+
+    def getTabNames(self) -> list[str]:
+        tabs = self.getTabs()
+        return [tab.text for tab in tabs]
+
+    def getActiveTab(self) -> WebElement:
+        return self.find_element_by_partial_class_name(self.active_tab_class_name)
+
+    def switchToTab(self, name: str) -> WebElement:
+        tabs = self.getTabs()
+        for tab in tabs:
+            if tab.text == name:
+                tab.click()
+                return tab
+        raise ElementNotFoundException("No tab exists with the name \"%s\"." % name)
+
+    def getContent(self) -> WebElement:
+        containerContent = PerspectiveElement(self.session, self.find_element_by_partial_class_name(self.tab_container_content_class_name))
+        elemInContainer = containerContent.getFirstChild()
+        return elemInContainer
+
 
 class TableRowGroup(PerspectiveElement):
     def getDataId(self) -> str:
