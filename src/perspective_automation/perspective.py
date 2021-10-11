@@ -52,6 +52,12 @@ class Component(WebElement):
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_elements(locator, identifier), timeout_in_seconds, raiseable_exception)
     
+    def getFirstChild(self) -> WebElement:
+        return super().find_element_by_xpath("./child::*")
+
+    def getChildren(self) -> list[WebElement]:
+        return super().find_elements_by_xpath("./child::*")
+    
     def getScreenshot(self):
         return self.screenshot_as_png()
 
