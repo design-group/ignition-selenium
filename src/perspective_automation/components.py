@@ -23,15 +23,6 @@ class AccordionHeaderType(Enum):
     TEXT = 1
     VIEW = 2
 
-class PagerType(Enum):
-    """
-    Denotes the type of pager. Possible values:
-    - `SIMPLE`: A pager that does not have Next/Previous buttons, First/Last buttons, and the "Jump to" text field. Usually has less than 10 pages.
-    - `ROBUST`: A pager that has Next/Previous buttons, First/Last buttons, and the "Jump to" text field. Usually has at least 10 pages.
-    """
-    SIMPLE = 1
-    ROBUST = 2
-
 class AccordionHeader(PerspectiveElement):
     def getHeaderType(self) -> AccordionHeaderType:
         if self.find_element_by_class_name("ia_accordionComponent__header__text"):
@@ -224,10 +215,6 @@ class _Pager(PerspectiveComponent):
     disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
     disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
     jump_field_class_name = "ia_pager__jump"
-
-    def getPagerType(self) -> PagerType:
-        centerElem = self.waitForElement(By.CLASS_NAME, 'center')
-        return PagerType.ROBUST if str(centerElem.get_attribute('class')).count('auto-margin-right') == 0 else PagerType.SIMPLE
 
     def getCurrentPage(self) -> int:
         activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
