@@ -346,15 +346,18 @@ class _Pager(PerspectiveComponent):
             raise ComponentInteractionException("Table page index out of range.")
     
     def getNumPages(self) -> int:
-        if self.getPagerType() == PagerType.SIMPLE:
+        try:
+            # If the "next" button is visible, not every page is showing in the pager
+            self.find_element_by_class_name(self.next_page_class_name)
+        except NoSuchElementException:
+            # No next button - every page num should be showing
             pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
             return len(pageElems)
-        else:
-            START_PAGE = self.getCurrentPage()
-            self.lastPage()
-            NUM_PAGES = self.getCurrentPage()
-            self.jumpToPage(START_PAGE)
-            return NUM_PAGES
+        START_PAGE = self.getCurrentPage()
+        self.lastPage()
+        NUM_PAGES = self.getCurrentPage()
+        self.jumpToPage(START_PAGE)
+        return NUM_PAGES
 
     # TODO: Get/Set page size
 
