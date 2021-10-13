@@ -9,7 +9,7 @@ from perspective_automation.perspective import (Component,
                                                 PerspectiveComponent,
                                                 PerspectiveElement,
                                                 ElementNotFoundException)
-from perspective_automation.selenium import Session
+from perspective_automation.selenium import Session, SelectAllKeys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
@@ -232,16 +232,184 @@ class TableCell(PerspectiveElement):
     def getData(self) -> str:
         return self.find_element_by_class_name("content").text
 
+
+class _Pager(PerspectiveComponent):
+    page_class_name = "ia_pager__page"
+    active_page_class_name = "ia_pager__page--active"
+    next_page_class_name = "next"
+    prev_page_class_name = "prev"
+    first_page_class_name = "first"
+    last_page_class_name = "last"
+    disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
+    disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
+    jump_field_class_name = "ia_pager__jump"
+
+    def getCurrentPage(self) -> int:
+        activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
+        return int(activePageElem.text)
+    
+    def nextPage(self) -> int:
+        try:
+            # If next button on screen
+            nextButton: WebElement = self.find_element_by_class_name(self.next_page_class_name)
+            if str(nextButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
+                nextButton.click()
+            else:
+                """Cannot go to next page, already on last page"""
+        except NoSuchElementException:
+            # No next button - every page num should be showing
+            pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+            curPageIndex = self.getCurrentPage() - 1
+            if curPageIndex != len(pageElems) - 1:
+                pageElems[curPageIndex + 1].click()
+            else:
+                """Cannot go to next page, already on last page"""
+        return self.getCurrentPage()
+
+    def prevPage(self) -> int:
+        try:
+            # If prev button on screen
+            prevButton: WebElement = self.find_element_by_class_name(self.prev_page_class_name)
+            if str(prevButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
+                prevButton.click()
+            else:
+                """Cannot go to previous page, already on first page"""
+        except NoSuchElementException:
+            # No prev button - every page num should be showing
+            pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+            curPageIndex = self.getCurrentPage() - 1
+            if curPageIndex != 0:
+                pageElems[curPageIndex - 1].click()
+            else:
+                """Cannot go to previous page, already on first page"""
+        return self.getCurrentPage()
+    
+    def firstPage(self) -> None:
+        try:
+            # If first button on screen
+            firstButton: WebElement = self.find_element_by_class_name(self.first_page_class_name)
+            if str(firstButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
+                firstButton.click()
+            else:
+                """Already on first page"""
+        except NoSuchElementException:
+            # No first button
+            try:
+                # If prev button on screen
+                prevButton: WebElement = self.find_element_by_class_name(self.prev_page_class_name)
+                while self.getCurrentPage() != 1:
+                    prevButton.click()
+            except NoSuchElementException:
+                # No prev button - every page num should be showing
+                if self.getCurrentPage() != 1:
+                    pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+                    pageElems[0].click()
+                else:
+                    """Already on first page"""
+    
+    def lastPage(self) -> None:
+        try:
+            # If last button on screen
+            lastButton: WebElement = self.find_element_by_class_name(self.last_page_class_name)
+            if str(lastButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
+                lastButton.click()
+            else:
+                """Already on last page"""
+        except NoSuchElementException:
+            # No last button
+            try:
+                # If next button on screen
+                nextButton: WebElement = self.find_element_by_class_name(self.next_page_class_name)
+                while str(nextButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
+                    nextButton.click()
+            except NoSuchElementException:
+                # No next button - every page num should be showing
+                if self.getCurrentPage() != 1:
+                    pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+                    pageElems[-1].click()
+                else:
+                    """Already on last page"""
+
+    def jumpToPage(self, page: int) -> None:
+        try:
+            # "Jump to" text field on screen
+            jumpTextField: WebElement = self.waitForElement(By.CLASS_NAME, self.jump_field_class_name)
+            jumpTextField.clear()
+            jumpTextField.send_keys(str(page))
+            jumpTextField.send_keys(Keys.ENTER)
+        except:
+            # No "Jump to" text field
+            try:
+                # Next and prev buttons on screen
+                nextButton: WebElement = self.find_element_by_class_name(self.next_page_class_name)
+                prevButton: WebElement = self.find_element_by_class_name(self.prev_page_class_name)
+                curPage = self.getCurrentPage()
+                while curPage != page:
+                    if curPage < page:
+                        nextButton.click()
+                    elif curPage > page:
+                        prevButton.click()
+            except:
+                # No next and prev buttons on scren - every page num should be showing
+                pageElems: list[WebElement] = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+                for pageElem in pageElems:
+                    if int(pageElem.text) == page:
+                        pageElem.click()
+                        break
+           
+        if self.getCurrentPage() != page:
+            raise ComponentInteractionException("Table page index out of range.")
+    
+    def getNumPages(self) -> int:
+        try:
+            # If the "next" button is visible, not every page is showing in the pager
+            self.find_element_by_class_name(self.next_page_class_name)
+        except NoSuchElementException:
+            # No next button - every page num should be showing
+            pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+            return len(pageElems)
+        START_PAGE = self.getCurrentPage()
+        self.lastPage()
+        NUM_PAGES = self.getCurrentPage()
+        self.jumpToPage(START_PAGE)
+        return NUM_PAGES
+
+    # TODO: Get/Set page size
+
+    # TODO: Determine pager visibility
+        
+
 class Table(PerspectiveComponent):
     header_cell_class_name = "ia_table__head__header__cell"
     row_group_class_name = "ia_table__body__rowGroup"
     cell_class_name = "ia_table__cell"
     table_filter_container_class_name = "ia_tableComponent__filterContainer"
+    pager_class_name = "ia_pager"
+    _pager = None
+
+    def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
+        super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
+        self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds))
+
+    # _Pager Methods
+    def getCurrentPage(self) -> int:
+        return self._pager.getCurrentPage()
+    def nextPage(self) -> int:
+        return self._pager.nextPage()
+    def prevPage(self) -> int:
+        return self._pager.prevPage()
+    def firstPage(self) -> None:
+        return self._pager.firstPage()
+    def lastPage(self) -> None:
+        return self._pager.lastPage()
+    def jumpToPage(self, page: int) -> None:
+        return self._pager.jumpToPage(page)
+    def getNumPages(self) -> int:
+        return self._pager.getNumPages()
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element).getDataId() for element in headerElements]
-
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
@@ -257,7 +425,7 @@ class Table(PerspectiveComponent):
             rows.append(rowCells)
         return rows
 
-    def getData(self) -> list[dict]:
+    def getCurrentPageData(self) -> list[dict]:
         rowGroups = self.getRowData()
         rows = []
 
@@ -268,6 +436,24 @@ class Table(PerspectiveComponent):
 
             rows.append(rowData)
 
+        return rows
+    
+    def getAllData(self) -> list[dict]:
+        START_PAGE = self.getCurrentPage()
+        self.firstPage()
+        curPage = 1
+        rows: list[dict] = []
+
+        while True:
+            curPage = self.getCurrentPage()
+            curPageRows = self.getCurrentPageData()
+            rows.extend(curPageRows)
+
+            # Loop until can't go to next page
+            if curPage == self.nextPage():
+                break
+
+        self.jumpToPage(START_PAGE)
         return rows
 
     def clickOnRow(self, rowIndex: int) -> None:
