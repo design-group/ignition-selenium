@@ -1,3 +1,5 @@
+import pytest
+from decorator import decorator
 from perspective_automation.selenium import Session
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
@@ -11,6 +13,17 @@ class ElementNotFoundException(Exception):
 
 class ComponentInteractionException(Exception):
     pass
+
+def Invasive(func):
+    def wrapper(func, *args, **kwargs):
+        config: dict[str] = args[0]
+        if not config:
+            pytest.skip("Config file could not be read.")
+        elif not config.get("allow_invasive"):
+            pytest.skip("Invasive tests are not allowed by config.")
+        else:
+            func(*args, **kwargs)
+    return decorator(wrapper, func)
 
 class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
