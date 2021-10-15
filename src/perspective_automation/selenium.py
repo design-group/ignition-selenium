@@ -21,6 +21,12 @@ class Credentials:
     username: None
     password: None
 
+class LogSource(Enum):
+    BROWSER = "browser"
+    DRIVER = "driver"
+    CLIENT = "client"
+    SERVER = "server"
+
 class SelectAllKeys(Enum):
     LINUX = Keys.CONTROL + "a"
     WINDOWS = Keys.CONTROL + "a"
@@ -37,8 +43,12 @@ def getChromeDriver(**kwargs) -> webdriver:
     if kwargs.get('headless', True):
         chrome_options.add_argument("--headless")
     
-    if kwargs.get('read_logs', False):
-        chrome_options.set_capability('goog:loggingPrefs', { 'browser': 'ALL' })
+    # log_soruces
+    logSourceCapability = {}
+    logSourceList = kwargs.get('log_sources', [])
+    for logSource in logSourceList:
+        logSourceCapability.setdefault(logSource, 'ALL')
+    chrome_options.set_capability('goog:loggingPrefs', logSourceCapability)
 
     if kwargs.get('browser_executable_path'):
         return webdriver.Chrome(
@@ -69,7 +79,7 @@ class Session():
         self.credentials = kwargs.get('credentials')
         self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
-        self.browser_log_read = kwargs.get('read_logs', False)
+        self.log_sources = kwargs.get('log_sources', [])
 
 
     def getSelectAllKeys(self) -> Keys:
@@ -138,10 +148,22 @@ class Session():
         self.login()
         self.waitForElement("reset-trial-anchor", By.ID).click()
     
-    def getBrowserLogs(self):
-        if self.browser_log_read != True:
+    def getLogsFrom(self, logSource: LogSource):
+        if self.log_sources.count(logSource.value) == 0:
             raise SessionConfigurationException(
-                "Cannot get browser logs. Please set the Session's 'read_logs' kwarg to True to read the browser logs."
+                f"Cannot get {logSource.value} logs. Please include '{logSource.value}' the Session's 'log_sources' list kwarg to read the {logSource.value} logs."
             )
-        return self.driver.get_log("browser")
-
+        else:
+            return self.driver.get_log(logSource.value)
+        
+    def getBrowserLogs(self):
+        return self.getLogsFrom(LogSource.BROWSER)
+    
+    def getDriverLogs(self):
+        return self.getLogsFrom(LogSource.DRIVER)
+    
+    def getClientLogs(self):
+        return self.getLogsFrom(LogSource.CLIENT)
+    
+    def getServerLogs(self):
+        return self.getLogsFrom(LogSource.SERVER)
