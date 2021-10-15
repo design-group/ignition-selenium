@@ -33,6 +33,9 @@ def getChromeDriver(**kwargs) -> webdriver:
 
     if kwargs.get('headless', True):
         chrome_options.add_argument("--headless")
+    
+    if kwargs.get('read_logs', False):
+        chrome_options.set_capability('goog:loggingPrefs', { 'browser': 'ALL' })
 
     if kwargs.get('browser_executable_path'):
         return webdriver.Chrome(
