@@ -13,6 +13,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 class ElementNotFoundException(Exception):
     pass
 
+class SessionConfigurationException(Exception):
+    pass
+
 @dataclass
 class Credentials:
     username: None
@@ -66,7 +69,7 @@ class Session():
         self.credentials = kwargs.get('credentials')
         self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
-
+        self.browser_log_read = kwargs.get('read_logs', False)
 
 
     def getSelectAllKeys(self) -> Keys:
@@ -134,3 +137,11 @@ class Session():
         self.waitForElement("login-link", By.ID).click()
         self.login()
         self.waitForElement("reset-trial-anchor", By.ID).click()
+    
+    def getBrowserLogs(self):
+        if self.browser_log_read != True:
+            raise SessionConfigurationException(
+                "Cannot get browser logs. Please set the Session's 'read_logs' kwarg to True to read the browser logs."
+            )
+        return self.driver.get_log("browser")
+
