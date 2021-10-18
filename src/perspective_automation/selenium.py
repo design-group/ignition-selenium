@@ -13,10 +13,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 class ElementNotFoundException(Exception):
     pass
 
+class SessionConfigurationException(Exception):
+    pass
+
 @dataclass
 class Credentials:
     username: None
     password: None
+
+class LogSource(Enum):
+    BROWSER = "browser"
+    DRIVER = "driver"
+    CLIENT = "client"
+    SERVER = "server"
 
 class SelectAllKeys(Enum):
     LINUX = Keys.CONTROL + "a"
@@ -33,6 +42,13 @@ def getChromeDriver(**kwargs) -> webdriver:
 
     if kwargs.get('headless', True):
         chrome_options.add_argument("--headless")
+    
+    # log_soruces
+    logSourceCapability = {}
+    logSourceList = kwargs.get('log_sources', [])
+    for logSource in logSourceList:
+        logSourceCapability.setdefault(logSource, 'ALL')
+    chrome_options.set_capability('goog:loggingPrefs', logSourceCapability)
 
     if kwargs.get('browser_executable_path'):
         return webdriver.Chrome(
@@ -63,7 +79,7 @@ class Session():
         self.credentials = kwargs.get('credentials')
         self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
-
+        self.log_sources = kwargs.get('log_sources', [])
 
 
     def getSelectAllKeys(self) -> Keys:
@@ -131,3 +147,23 @@ class Session():
         self.waitForElement("login-link", By.ID).click()
         self.login()
         self.waitForElement("reset-trial-anchor", By.ID).click()
+    
+    def getLogsFrom(self, logSource: LogSource):
+        if self.log_sources.count(logSource.value) == 0:
+            raise SessionConfigurationException(
+                f"Cannot get {logSource.value} logs. Please include '{logSource.value}' the Session's 'log_sources' list kwarg to read the {logSource.value} logs."
+            )
+        else:
+            return self.driver.get_log(logSource.value)
+        
+    def getBrowserLogs(self):
+        return self.getLogsFrom(LogSource.BROWSER)
+    
+    def getDriverLogs(self):
+        return self.getLogsFrom(LogSource.DRIVER)
+    
+    def getClientLogs(self):
+        return self.getLogsFrom(LogSource.CLIENT)
+    
+    def getServerLogs(self):
+        return self.getLogsFrom(LogSource.SERVER)
