@@ -478,6 +478,9 @@ class Table(PerspectiveComponent):
         filterInputBox: WebElement = filterContainer.find_element_by_class_name(
             "ia_inputField")
         filterInputBox.send_keys(keys)
+    
+    def hasPager(self) -> bool:
+        return self._pager != None
 
 
 class TextArea(PerspectiveComponent):
