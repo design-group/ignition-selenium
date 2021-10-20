@@ -116,6 +116,10 @@ class Dropdown(PerspectiveComponent):
                 option.click()
                 return
 
+    def getOptions(self) -> list[WebElement]:
+        self.click()
+        return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+
     def setValues(self, option_texts: list[str]) -> None:
         if not "iaDropdownCommon_multi-select" in self.get_attribute("class"):
             raise ComponentInteractionException("Dropdown is not multi-select")
