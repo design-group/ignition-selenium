@@ -108,13 +108,16 @@ class Dropdown(PerspectiveComponent):
             pass
 
     def setValue(self, option_text: str) -> None:
-        self.click()
-        dropdownOptions = self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+        dropdownOptions = self.getOptions()
 
         for option in dropdownOptions:
             if option.text == option_text:
                 option.click()
                 return
+
+    def getOptions(self) -> list[WebElement]:
+        self.click()
+        return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
 
     def setValues(self, option_texts: list[str]) -> None:
         if not "iaDropdownCommon_multi-select" in self.get_attribute("class"):
@@ -125,9 +128,8 @@ class Dropdown(PerspectiveComponent):
             option_texts.remove(value.text)
 
         for option in option_texts:
-            self.click()
             optionAdded = False
-            option_elements = self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+            option_elements = self.getOptions()
             for option_element in option_elements:
                 if option_element.text == option:
                     optionAdded = True
