@@ -480,7 +480,7 @@ class Table(PerspectiveComponent):
         filterInputBox.send_keys(keys)
     
     def hasPager(self) -> bool:
-        return self._pager != None
+        return self._pager is not None
 
 
 class TextArea(PerspectiveComponent):
