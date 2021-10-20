@@ -40,7 +40,7 @@ class DockerTestingEnvironment:
         return container
 
     def enableQuickStart(self):
-        session = Session(self.url, "/", 10, credentials=self.credentials, headless=True, browser_executable_path="/usr/local/Caskroom/chromedriver/93.0.4577.63/chromedriver")
+        session = Session(self.url, "/", 10, credentials=self.credentials, headless=False, browser_executable_path="/usr/local/Caskroom/chromedriver/93.0.4577.63/chromedriver")
         quickStartContainer = Component(session,  By.ID, "quickStartOverlayContainer", timeout_in_seconds=60)
 
         quickStartButton = quickStartContainer.find_element_by_partial_class_name("primary-action")
@@ -71,3 +71,4 @@ def test_container():
 
 if __name__ == "__main__":
     pytest.main()
+    
