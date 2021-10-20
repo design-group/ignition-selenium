@@ -129,9 +129,8 @@ class Dropdown(PerspectiveComponent):
             option_texts.remove(value.text)
 
         for option in option_texts:
-            self.click()
             optionAdded = False
-            option_elements = self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+            option_elements = self.getOptions()
             for option_element in option_elements:
                 if option_element.text == option:
                     optionAdded = True
