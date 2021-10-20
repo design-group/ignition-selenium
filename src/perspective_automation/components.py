@@ -391,7 +391,9 @@ class Table(PerspectiveComponent):
 
     def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
-        self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds))
+        pagerElements = self.find_elements_by_class_name(self.pager_class_name)
+        if len(pagerElements) > 0:
+            self._pager = _Pager(self.session, element=pagerElements[0])
 
     # _Pager Methods
     def getCurrentPage(self) -> int:
