@@ -403,11 +403,11 @@ class Table(PerspectiveComponent):
     def prevPage(self) -> int:
         return self._pager.prevPage()
     def firstPage(self) -> None:
-        return self._pager.firstPage()
+        self._pager.firstPage()
     def lastPage(self) -> None:
-        return self._pager.lastPage()
+        self._pager.lastPage()
     def jumpToPage(self, page: int) -> None:
-        return self._pager.jumpToPage(page)
+        self._pager.jumpToPage(page)
     def getNumPages(self) -> int:
         return self._pager.getNumPages()
 
