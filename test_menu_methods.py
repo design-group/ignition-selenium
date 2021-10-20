@@ -26,9 +26,12 @@ def test_menu_instance_methods():
     print('visible menu values')
     print(menu.getValues())
 
-    # menu.selectMenu('Boards')
+    print(menu.getLabels())
 
-    session.close()
+    menu.selectMenu('Boards')
+    time.sleep(10)
+
+    # session.close()
 
 if __name__ == "__main__":
    pytest.main(["-rP", __file__])
