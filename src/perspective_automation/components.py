@@ -146,30 +146,38 @@ class Label(PerspectiveComponent):
 
 class Menu(PerspectiveComponent):
     menu_class = "menu-item"
-    menu_label_class = "label-text"
+    menu_label_class = "menu-option"
     menu_invisible_class = "item-invisible"
 
-    def getValues(self, include_invisible=False) -> list[str]:
+    def getLabels(self, include_invisible=False) -> list[WebElement]:
         try:
             self.waitForElement(By.CLASS_NAME, self.menu_label_class)
             menu_labels_all = self.find_elements_by_partial_class_name(self.menu_label_class)
-            menu_labels_invisible = self.find_elements_by_partial_class_name(self.menu_invisible_class)
-            # print(len(menu_labels_invisible))
+            labels = [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all]
 
             if include_invisible:
-                labels = [label.find_element_by_xpath(".//*") for label in menu_labels_all]
+                return labels
+            else:                
+                menu_labels_invisible = self.find_elements_by_partial_class_name(self.menu_invisible_class)
+                return [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all if label not in menu_labels_invisible]
+
+        except:
+            raise ElementNotFoundException("Unable to find menu items")
+
+    def getValues(self, include_invisible=False) -> list[str]:
+        try:
+            if include_invisible:
+                labels = self.getLabels(include_invisible=True)
                 return [label.get_attribute('innerHTML') for label in labels]
             else:
-                visible_labels = [label for label in menu_labels_all if label not in menu_labels_invisible]
-                print(len(visible_labels))
-                # labels2 = [label2.find_element_by_xpath(".//*") for label2 in labels]
-                # return [label.get_attribute('innerHTML') for label in labels2]
+                visible_labels = self.getLabels()
+                return [label.get_attribute('innerHTML') for label in visible_labels]
 
         except Exception as e:
             raise ElementNotFoundException("Unable to find menu items")
 
-    def switchMenu(self, name: str):
-        labels = self.getValues()
+    def selectMenu(self, name: str):
+        labels = self.getLabels()
         try:
             name in labels
             for label in labels:

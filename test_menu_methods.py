@@ -2,26 +2,31 @@ import pytest
 import time
 from selenium.webdriver.common.by import By
 from perspective_automation.selenium import Session, Credentials
-from perspective_automation.components import Menu, Table, View, Button
+from perspective_automation.components import Menu, View
+# import perspective_automation
 
 def test_menu_instance_methods():
     BASE_URL = "http://localhost:4000"
     PAGE_PATH = "/data/perspective/client/MES/"
     CREDENTIALS = Credentials("RATester01", "N3verp@tch2021")
+    SLEEP_TIME = 1
+
     session = Session(BASE_URL, PAGE_PATH, 20, credentials=CREDENTIALS, headless=False)
-    time.sleep(3)
+    time.sleep(SLEEP_TIME)
     session.login()
 
     # Click to open docked menu
     header = View(session, By.ID, "General.Headers.Default")
-    # header = View(session, By.CLASS_NAME, "ia_container--primary")
     sideMenuButton = header.find_element_by_tag_name('button')
     sideMenuButton.click()
 
     menu = Menu(session, By.CLASS_NAME, "menu-tree")
-    print('menu values')
+    print('all menu values')
     print(menu.getValues(include_invisible=True))
+    print('visible menu values')
     print(menu.getValues())
+
+    # menu.selectMenu('Boards')
 
     session.close()
 
