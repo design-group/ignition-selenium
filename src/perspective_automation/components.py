@@ -144,6 +144,41 @@ class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
 
+class Menu(PerspectiveComponent):
+    menu_class = "menu-item"
+    menu_label_class = "label-text"
+    menu_invisible_class = "item-invisible"
+
+    def getValues(self, include_invisible=False) -> list[str]:
+        try:
+            self.waitForElement(By.CLASS_NAME, self.menu_label_class)
+            menu_labels_all = self.find_elements_by_partial_class_name(self.menu_label_class)
+            menu_labels_invisible = self.find_elements_by_partial_class_name(self.menu_invisible_class)
+            # print(len(menu_labels_invisible))
+
+            if include_invisible:
+                labels = [label.find_element_by_xpath(".//*") for label in menu_labels_all]
+                return [label.get_attribute('innerHTML') for label in labels]
+            else:
+                visible_labels = [label for label in menu_labels_all if label not in menu_labels_invisible]
+                print(len(visible_labels))
+                # labels2 = [label2.find_element_by_xpath(".//*") for label2 in labels]
+                # return [label.get_attribute('innerHTML') for label in labels2]
+
+        except Exception as e:
+            raise ElementNotFoundException("Unable to find menu items")
+
+    def switchMenu(self, name: str):
+        labels = self.getValues()
+        try:
+            name in labels
+            for label in labels:
+                if label == name:
+                    self.click()
+        except Exception as e:
+            raise ElementNotFoundException("Unable to find menu item")
+                
+
 class NumericInput(PerspectiveComponent):
     
     def getInputBox(self) -> WebElement:
