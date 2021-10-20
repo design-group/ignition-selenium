@@ -108,8 +108,7 @@ class Dropdown(PerspectiveComponent):
             pass
 
     def setValue(self, option_text: str) -> None:
-        self.click()
-        dropdownOptions = self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+        dropdownOptions = self.getOptions()
 
         for option in dropdownOptions:
             if option.text == option_text:
