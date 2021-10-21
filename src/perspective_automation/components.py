@@ -391,7 +391,11 @@ class _Pager(PerspectiveComponent):
         return pageSize
 
     def setPageSize(self, size: int):
-        ...
+        select = self.getPageSizeSelect()
+        try:
+            select.select_by_value(str(size))
+        except NoSuchElementException:
+            raise ComponentInteractionException(f"No option exists to show {str(size)} items per page")
         
 
 class Table(PerspectiveComponent):
