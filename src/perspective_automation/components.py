@@ -384,7 +384,11 @@ class _Pager(PerspectiveComponent):
         return select
 
     def getPageSize(self) -> int:
-        ...
+        select = self.getPageSizeSelect()
+        selectedOption: WebElement = select.first_selected_option
+        optionStr = str(selectedOption.text)
+        pageSize = int(optionStr.split()[0])
+        return pageSize
 
     def setPageSize(self, size: int):
         ...
