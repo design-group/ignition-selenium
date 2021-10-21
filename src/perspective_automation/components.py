@@ -378,6 +378,11 @@ class _Pager(PerspectiveComponent):
         self.jumpToPage(START_PAGE)
         return NUM_PAGES
 
+    def getPageSizeSelect(self) -> Select:
+        selectParent: WebElement = self.find_element_by_class_name(self.page_size_div_class_name)
+        select = Select(selectParent.find_element_by_tag_name("select"))
+        return select
+
     def getPageSize(self) -> int:
         ...
 
