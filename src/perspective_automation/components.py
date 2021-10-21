@@ -395,21 +395,38 @@ class Table(PerspectiveComponent):
         if len(pagerElements) > 0:
             self._pager = _Pager(self.session, element=pagerElements[0])
 
-    # _Pager Methods
+    # Start _Pager Methods
     def getCurrentPage(self) -> int:
-        return self._pager.getCurrentPage()
+        return self._pager.getCurrentPage() if self.hasPager() else 1
+
     def nextPage(self) -> int:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         return self._pager.nextPage()
+
     def prevPage(self) -> int:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         return self._pager.prevPage()
+
     def firstPage(self) -> None:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         self._pager.firstPage()
+
     def lastPage(self) -> None:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         self._pager.lastPage()
+
     def jumpToPage(self, page: int) -> None:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         self._pager.jumpToPage(page)
+
     def getNumPages(self) -> int:
-        return self._pager.getNumPages()
+        return self._pager.getNumPages() if self.hasPager() else 1
+    # End _Pager Methods
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
