@@ -445,10 +445,12 @@ class Table(PerspectiveComponent):
         return self._pager.getNumPages() if self.hasPager() else 1
 
     def getPageSize(self) -> int:
-        ...
+        return self._pager.getPageSize() if self.hasPager() else len(self.waitForElements(By.CLASS_NAME, self.row_group_class_name))
 
     def setPageSize(self, size: int):
-        ...
+        if not self.hasPager():
+            raise ComponentInteractionException("Setting the page size is disabled for this table")
+        self._pager.setPageSize(size)
     # End _Pager Methods
 
     def getHeaders(self) -> list[TableCell]:
