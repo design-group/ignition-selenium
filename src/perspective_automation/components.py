@@ -13,6 +13,7 @@ from perspective_automation.selenium import Session, SelectAllKeys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.select import Select
 
 
 class InputState(Enum):
@@ -245,6 +246,7 @@ class _Pager(PerspectiveComponent):
     disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
     disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
     jump_field_class_name = "ia_pager__jump"
+    page_size_div_class_name = "ia_pager__pageSizeChooser"
 
     def getCurrentPage(self) -> int:
         activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
@@ -376,9 +378,11 @@ class _Pager(PerspectiveComponent):
         self.jumpToPage(START_PAGE)
         return NUM_PAGES
 
-    # TODO: Get/Set page size
+    def getPageSize(self) -> int:
+        ...
 
-    # TODO: Determine pager visibility
+    def setPageSize(self, size: int):
+        ...
         
 
 class Table(PerspectiveComponent):
@@ -426,6 +430,12 @@ class Table(PerspectiveComponent):
 
     def getNumPages(self) -> int:
         return self._pager.getNumPages() if self.hasPager() else 1
+
+    def getPageSize(self) -> int:
+        ...
+
+    def setPageSize(self, size: int):
+        ...
     # End _Pager Methods
 
     def getHeaders(self) -> list[TableCell]:
