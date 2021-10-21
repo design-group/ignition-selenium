@@ -257,7 +257,7 @@ class _Pager(PerspectiveComponent):
             if str(nextButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
                 nextButton.click()
             else:
-                """Cannot go to next page, already on last page"""
+                raise ComponentInteractionException("Cannot go to next page, already on last page")
         except NoSuchElementException:
             # No next button - every page num should be showing
             pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
@@ -265,7 +265,7 @@ class _Pager(PerspectiveComponent):
             if curPageIndex != len(pageElems) - 1:
                 pageElems[curPageIndex + 1].click()
             else:
-                """Cannot go to next page, already on last page"""
+                raise ComponentInteractionException("Cannot go to next page, already on last page")
         return self.getCurrentPage()
 
     def prevPage(self) -> int:
@@ -275,7 +275,7 @@ class _Pager(PerspectiveComponent):
             if str(prevButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
                 prevButton.click()
             else:
-                """Cannot go to previous page, already on first page"""
+                raise ComponentInteractionException("Cannot go to previous page, already on first page")
         except NoSuchElementException:
             # No prev button - every page num should be showing
             pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
@@ -283,7 +283,7 @@ class _Pager(PerspectiveComponent):
             if curPageIndex != 0:
                 pageElems[curPageIndex - 1].click()
             else:
-                """Cannot go to previous page, already on first page"""
+                raise ComponentInteractionException("Cannot go to previous page, already on first page")
         return self.getCurrentPage()
     
     def firstPage(self) -> None:
@@ -293,7 +293,7 @@ class _Pager(PerspectiveComponent):
             if str(firstButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
                 firstButton.click()
             else:
-                """Already on first page"""
+                raise ComponentInteractionException("Already on first page")
         except NoSuchElementException:
             # No first button
             try:
@@ -307,7 +307,7 @@ class _Pager(PerspectiveComponent):
                     pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
                     pageElems[0].click()
                 else:
-                    """Already on first page"""
+                    raise ComponentInteractionException("Already on first page")
     
     def lastPage(self) -> None:
         try:
@@ -316,7 +316,7 @@ class _Pager(PerspectiveComponent):
             if str(lastButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
                 lastButton.click()
             else:
-                """Already on last page"""
+                raise ComponentInteractionException("Already on last page")
         except NoSuchElementException:
             # No last button
             try:
@@ -330,7 +330,7 @@ class _Pager(PerspectiveComponent):
                     pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
                     pageElems[-1].click()
                 else:
-                    """Already on last page"""
+                    raise ComponentInteractionException("Already on last page")
 
     def jumpToPage(self, page: int) -> None:
         try:
