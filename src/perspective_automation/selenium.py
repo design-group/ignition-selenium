@@ -83,6 +83,7 @@ class Session():
 
 
     def __enter__(self):
+        self.login()
         return self
     
     def __exit__(self):

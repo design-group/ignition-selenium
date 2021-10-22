@@ -8,9 +8,8 @@ def test_sample_filter():
     BASE_URL = "https://lv1mesdevlap01.est1933.com:8043"
     PAGE_PATH = "/data/perspective/client/MES/Sampling"
     CREDENTIALS = Credentials("RATester01", "N3verp@tch2021")
-    
+
     with Session(BASE_URL, PAGE_PATH, 20, credentials=CREDENTIALS, headless=False) as session:
-        session.login()
         SLEEP_TIME = 1
         # click order filter button
         filter_button = View(session, By.ID, "orderFilterIcon")
