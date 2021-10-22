@@ -99,7 +99,6 @@ class CheckBox(PerspectiveComponent):
     def toggle(self) -> bool:
         if self.get_attribute('class') == 'ia_checkbox':
             self.click()
-            self.click()
         else:
             self.find_element_by_class_name("ia_checkbox").click()
 
