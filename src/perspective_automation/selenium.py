@@ -68,7 +68,7 @@ class Browsers(Enum):
     GOOGLE_CHROME = getChromeDriver
     SAFARI = getSafariDriver
 
-class Session():
+class Session(object):
     def __init__(self, base_url, page_path, wait_timeout_in_seconds, **kwargs) -> None:
 
         self.driver = kwargs.get('browser', Browsers.GOOGLE_CHROME)(**kwargs)
@@ -80,6 +80,15 @@ class Session():
         self.platform_version = system().upper()
         self.select_all_keys = self.getSelectAllKeys()
         self.log_sources = kwargs.get('log_sources', [])
+
+
+    def __enter__(self):
+        if self.credentials:
+            self.login()
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        self.close()
 
 
     def getSelectAllKeys(self) -> Keys:

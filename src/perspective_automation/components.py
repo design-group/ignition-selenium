@@ -38,6 +38,12 @@ class AccordionHeader(PerspectiveElement):
     def toggleExpansion(self) -> bool:
         self.click()
         return self.isExpanded
+    
+    def setExpansion(self, value: bool):
+        currentState = self.isExpanded()
+
+        if currentState != value:
+            self.toggleExpansion()
 
     def getHeaderText(self) -> str:
         """
@@ -73,16 +79,35 @@ class Button(PerspectiveComponent):
 
 class CheckBox(PerspectiveComponent):
     def getValue(self) -> bool:
-        checkboxId = self.find_element_by_class_name(
+        try:
+            checkboxId = self.find_element_by_class_name(
             "icon").get_attribute("id")
-        checkboxState = {
-            "check_box": True,
-            "check_box_outline_blank": False
-        }
-        return checkboxState.get(checkboxId)
+            checkboxState = {
+                "check_box": True,
+                "check_box_outline_blank": False
+                # "ia_checkbox__uncheckedIcon"
+            }
+
+            return checkboxState.get(checkboxId)
+        except NoSuchElementException:
+            """Lets try another class set"""
+            try:
+                checkbox = self.find_element_by_partial_class_name("ia_checkbox__uncheckedIcon")
+                return False
+            except NoSuchElementException:
+                checkbox = self.find_element_by_partial_class_name("ia_checkbox__checkedIcon")
+                return True
+        except Exception as e:
+            """ Raise the original exception """
+            raise e
+        
 
     def toggle(self) -> bool:
-        self.find_element_by_class_name("ia_checkbox").click()
+        if self.get_attribute('class') == 'ia_checkbox':
+            self.click()
+        else:
+            self.find_element_by_class_name("ia_checkbox").click()
+
         return self.getValue()
 
     def setValue(self, value: bool) -> None:
@@ -116,8 +141,12 @@ class Dropdown(PerspectiveComponent):
                 return
 
     def getOptions(self) -> list[WebElement]:
-        self.click()
+        self.click()    
         return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+    
+    def getOptionTexts(self) -> list[str]:
+        dropdown_options = self.getOptions()
+        return [dropdown_option.text for dropdown_option in dropdown_options]
 
     def setValues(self, option_texts: list[str]) -> None:
         if not "iaDropdownCommon_multi-select" in self.get_attribute("class"):
@@ -140,6 +169,8 @@ class Dropdown(PerspectiveComponent):
                 raise ComponentInteractionException(
                     "Dropdown Value Not Present: %s" % option)
 
+class Icon(PerspectiveComponent):
+    pass
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
@@ -391,9 +422,10 @@ class Table(PerspectiveComponent):
 
     def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
-        pagerElements = self.find_elements_by_class_name(self.pager_class_name)
-        if len(pagerElements) > 0:
-            self._pager = _Pager(self.session, element=pagerElements[0])
+        try:
+            self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, 2))
+        except ElementNotFoundException:
+            """ The table likely does not have a pager visible """
 
     # Start _Pager Methods
     def getCurrentPage(self) -> int:
@@ -445,6 +477,18 @@ class Table(PerspectiveComponent):
                         for element in rowGroup.find_elements_by_class_name(self.cell_class_name)]
             rows.append(rowCells)
         return rows
+    
+    def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> list[WebElement]:
+        if dataId:
+            return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-id='%s']" % dataId, timeout_in_seconds=5)
+        elif columnIndex:
+            return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-index='%s']" % columnIndex, timeout_in_seconds=5)
+        else:
+            raise ComponentInteractionException("Must provide a column selector dataId or columnIndex")
+
+    def getColumnTextsAsList(self, dataId: str=None, columnIndex: int=None) -> list[str]:
+        columnCells = self.getColumnAsList(dataId, columnIndex)
+        return [cell.text for cell in columnCells]
 
     def getCurrentPageData(self) -> list[dict]:
         rowGroups = self.getRowData()
