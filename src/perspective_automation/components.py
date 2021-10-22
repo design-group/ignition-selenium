@@ -38,6 +38,12 @@ class AccordionHeader(PerspectiveElement):
     def toggleExpansion(self) -> bool:
         self.click()
         return self.isExpanded
+    
+    def setExpansion(self, value: bool):
+        currentState = self.isExpanded()
+
+        if currentState != value:
+            self.toggleExpansion()
 
     def getHeaderText(self) -> str:
         """
@@ -163,6 +169,8 @@ class Dropdown(PerspectiveComponent):
                 raise ComponentInteractionException(
                     "Dropdown Value Not Present: %s" % option)
 
+class Icon(PerspectiveComponent):
+    pass
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
@@ -455,9 +463,9 @@ class Table(PerspectiveComponent):
     
     def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> list[WebElement]:
         if dataId:
-            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and contains(@data-column-id, '%s')]" % dataId, timeout_in_seconds=5)
+            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and @data-column-id='%s']" % dataId, timeout_in_seconds=5)
         elif columnIndex:
-            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and contains(@data-column-index, '%s')]" % columnIndex, timeout_in_seconds=5)
+            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and @data-column-index='%s']" % columnIndex, timeout_in_seconds=5)
         else:
             raise ComponentInteractionException("Must provide a column selector dataId or columnIndex")
 
