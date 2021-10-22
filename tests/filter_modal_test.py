@@ -8,7 +8,7 @@ def test_sample_filter():
     BASE_URL = "https://lv1mesdevlap01.est1933.com:8043"
     PAGE_PATH = "/data/perspective/client/MES/Sampling"
     CREDENTIALS = Credentials("RATester01", "N3verp@tch2021")
-
+    
     with Session(BASE_URL, PAGE_PATH, 20, credentials=CREDENTIALS, headless=False) as session:
         SLEEP_TIME = 1
         # click order filter button
@@ -36,12 +36,13 @@ def test_sample_filter():
         # clear any existing filters and close filter modal
         # the line below was written using Selenium 4.0.0
         # clear_values = popup_container.find_elements(By.CLASS_NAME, "iaDropdownCommon_remove_value")
-        clear_values = popup_container.find_elements_by_class_name("iaDropdownCommon_remove_value")
-        if clear_values:
-            for value in clear_values:
-                value.click()
-        close_icon = View(session, By.CLASS_NAME, "close-icon")
-        close_icon.click()
+
+        # clear_values = popup_container.find_elements_by_class_name("iaDropdownCommon_remove_value")
+        # if clear_values:
+        #     for value in clear_values:
+        #         value.click()
+        # close_icon = View(session, By.CLASS_NAME, "close-icon")
+        # close_icon.click()
     
 if __name__ == "__main__":
-    pytest.main(["-rP", __file__])
+    pytest.main(["-srP", __file__])
