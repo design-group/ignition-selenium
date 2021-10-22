@@ -2,8 +2,9 @@ import time, json
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote import webelement
+from perspective_automation.perspective import PerspectiveElement
 from perspective_automation.selenium import Session, Credentials
-from perspective_automation.components import Label, TextBox, TextArea, Table, Button, CheckBox
+from perspective_automation.components import View, TextBox, TextArea, Table, Button, CheckBox
 
 
 
@@ -16,9 +17,6 @@ def test_sampleTable():
 
     ORDER_NUM = 1990681
     TANK_NUM = 134
-    TEST_PROCESS = "CUO"
-    TEST_CODE = "TSO2F"
-
 
     BASE_URL = "https://lv1mesdevlap01.est1933.com:8043"
     PAGE_PATH = "/data/perspective/client/MES/component-test-fixture"
@@ -31,23 +29,35 @@ def test_sampleTable():
 
     viewParams = TextArea(session, By.ID, "viewParamsTextBox")
     # {   "TNK_SYS_I": 134,   "WRK_ORD_SYS_I": 1990681,   "sampleProcess": "CUO" }
-    viewParams.setText(json.dumps({"WRK_ORD_SYS_I": ORDER_NUM,"TNK_SYS_I":TANK_NUM, "sampleProcess":TEST_PROCESS}))
+    viewParams.setText(json.dumps({"WRK_ORD_SYS_I": ORDER_NUM,"TNK_SYS_I":TANK_NUM}))
     # Reset the focus off of the textArea
     viewPath.click()
 
-    sampleTable = Table(session, By.ID, "taskSampleTable")
-    # Wait for the table to load
-    time.sleep(2)
-    test_codes = sampleTable.getColumnAsList('LIMS_ACODE')
-    rowIndex = None
-    for index, test in enumerate(test_codes):
-        if test == TEST_CODE:
-            rowIndex = index
+    # Show all samples in table
+    sampleView = View(session, element=session.waitForElement("Operations.Tasks.Body.Sample", By.ID))
+    showAllToggle: PerspectiveElement = sampleView.find_element_by_class_name("ia_toggleSwitch")
+    showAllToggle.click()
+    time.sleep(3)  # give time to load
+
+     # Get table reference and wait for complete loading
+    sampleTable = Table(session, By.ID, "taskSampleTable", parent=sampleView)
+
+    mes_status_column = sampleTable.getColumnAsList('mesStatus')
+    readySampleIndex = None
+    for index, status in enumerate(mes_status_column):
+        if status.text in [None, '', 'Delivered'] == '':
+            readySampleIndex = index
             break
+    if not readySampleIndex:
+        raise Exception("Could not find a sample that is ready to send")
     
-    checkboxes: list[webelement.WebElement] = sampleTable.getColumnAsList('expandSubview')
-    checkBox = CheckBox(session, By.CLASS_NAME, "ia_checkbox", parent=checkboxes[rowIndex])
-    checkBox.setValue(True)
+    checkboxes = sampleTable.getColumnAsList('expandSubview')
+    # Select checkbox column:
+    checkboxes[readySampleIndex].click()
+
+    # Set the checkbox to true
+    checkBox = CheckBox(session, By.CLASS_NAME, "ia_checkbox", parent=checkboxes[readySampleIndex])
+    checkBox.click()
 
     time.sleep(5)
     # rowGroups = sampleTable.getRowGroups()

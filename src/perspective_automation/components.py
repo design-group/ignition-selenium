@@ -454,10 +454,16 @@ class Table(PerspectiveComponent):
         return rows
     
     def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> list[WebElement]:
-        # cells = self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell')]")
-        # return cells
-        cells = self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and contains(@data-column-id, '%s')]" % dataId, timeout_in_seconds=5)
-        return [cell.text for cell in cells]
+        if dataId:
+            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and contains(@data-column-id, '%s')]" % dataId, timeout_in_seconds=5)
+        elif columnIndex:
+            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and contains(@data-column-index, '%s')]" % columnIndex, timeout_in_seconds=5)
+        else:
+            raise ComponentInteractionException("Must provide a column selector dataId or columnIndex")
+
+    def getColumnTextsAsList(self, dataId: str=None, columnIndex: int=None) -> list[str]:
+        columnCells = self.getColumnAsList(dataId, columnIndex)
+        return [cell.text for cell in columnCells]
 
     def getCurrentPageData(self) -> list[dict]:
         rowGroups = self.getRowData()
