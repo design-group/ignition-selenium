@@ -82,6 +82,13 @@ class Session():
         self.log_sources = kwargs.get('log_sources', [])
 
 
+    def __enter__(self):
+        return self
+    
+    def __exit__(self):
+        self.close()
+
+
     def getSelectAllKeys(self) -> Keys:
         return SelectAllKeys[self.platform_version].value
 
