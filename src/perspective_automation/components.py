@@ -463,9 +463,9 @@ class Table(PerspectiveComponent):
     
     def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> list[WebElement]:
         if dataId:
-            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and @data-column-id='%s']" % dataId, timeout_in_seconds=5)
+            return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-id='%s']" % dataId, timeout_in_seconds=5)
         elif columnIndex:
-            return self.waitForElements(By.XPATH, "//*[contains(@class, 'tc ia_table__cell') and @data-column-index='%s']" % columnIndex, timeout_in_seconds=5)
+            return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-index='%s']" % columnIndex, timeout_in_seconds=5)
         else:
             raise ComponentInteractionException("Must provide a column selector dataId or columnIndex")
 
