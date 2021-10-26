@@ -13,6 +13,7 @@ from perspective_automation.selenium import Session, SelectAllKeys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.select import Select
 
 
 class InputState(Enum):
@@ -276,6 +277,7 @@ class _Pager(PerspectiveComponent):
     disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
     disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
     jump_field_class_name = "ia_pager__jump"
+    page_size_div_class_name = "ia_pager__pageSizeChooser"
 
     def getCurrentPage(self) -> int:
         activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
@@ -407,9 +409,24 @@ class _Pager(PerspectiveComponent):
         self.jumpToPage(START_PAGE)
         return NUM_PAGES
 
-    # TODO: Get/Set page size
+    def getPageSizeSelect(self) -> Select:
+        selectParent: WebElement = self.find_element_by_class_name(self.page_size_div_class_name)
+        select = Select(selectParent.find_element_by_tag_name("select"))
+        return select
 
-    # TODO: Determine pager visibility
+    def getPageSize(self) -> int:
+        select = self.getPageSizeSelect()
+        selectedOption: WebElement = select.first_selected_option
+        optionStr = str(selectedOption.text)
+        pageSize = int(optionStr.split()[0])
+        return pageSize
+
+    def setPageSize(self, size: int):
+        select = self.getPageSizeSelect()
+        try:
+            select.select_by_value(str(size))
+        except NoSuchElementException:
+            raise ComponentInteractionException(f"No option exists to show {str(size)} items per page")
         
 
 class Table(PerspectiveComponent):
@@ -458,6 +475,14 @@ class Table(PerspectiveComponent):
 
     def getNumPages(self) -> int:
         return self._pager.getNumPages() if self.hasPager() else 1
+
+    def getPageSize(self) -> int:
+        return self._pager.getPageSize() if self.hasPager() else len(self.waitForElements(By.CLASS_NAME, self.row_group_class_name))
+
+    def setPageSize(self, size: int):
+        if not self.hasPager():
+            raise ComponentInteractionException("Setting the page size is disabled for this table")
+        self._pager.setPageSize(size)
     # End _Pager Methods
 
     def getHeaders(self) -> list[TableCell]:
