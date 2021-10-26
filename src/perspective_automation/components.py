@@ -13,6 +13,7 @@ from perspective_automation.selenium import Session, SelectAllKeys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.select import Select
 
 
 class InputState(Enum):
@@ -38,6 +39,12 @@ class AccordionHeader(PerspectiveElement):
     def toggleExpansion(self) -> bool:
         self.click()
         return self.isExpanded
+    
+    def setExpansion(self, value: bool):
+        currentState = self.isExpanded()
+
+        if currentState != value:
+            self.toggleExpansion()
 
     def getHeaderText(self) -> str:
         """
@@ -73,16 +80,35 @@ class Button(PerspectiveComponent):
 
 class CheckBox(PerspectiveComponent):
     def getValue(self) -> bool:
-        checkboxId = self.find_element_by_class_name(
+        try:
+            checkboxId = self.find_element_by_class_name(
             "icon").get_attribute("id")
-        checkboxState = {
-            "check_box": True,
-            "check_box_outline_blank": False
-        }
-        return checkboxState.get(checkboxId)
+            checkboxState = {
+                "check_box": True,
+                "check_box_outline_blank": False
+                # "ia_checkbox__uncheckedIcon"
+            }
+
+            return checkboxState.get(checkboxId)
+        except NoSuchElementException:
+            """Lets try another class set"""
+            try:
+                checkbox = self.find_element_by_partial_class_name("ia_checkbox__uncheckedIcon")
+                return False
+            except NoSuchElementException:
+                checkbox = self.find_element_by_partial_class_name("ia_checkbox__checkedIcon")
+                return True
+        except Exception as e:
+            """ Raise the original exception """
+            raise e
+        
 
     def toggle(self) -> bool:
-        self.find_element_by_class_name("ia_checkbox").click()
+        if self.get_attribute('class') == 'ia_checkbox':
+            self.click()
+        else:
+            self.find_element_by_class_name("ia_checkbox").click()
+
         return self.getValue()
 
     def setValue(self, value: bool) -> None:
@@ -116,8 +142,12 @@ class Dropdown(PerspectiveComponent):
                 return
 
     def getOptions(self) -> list[WebElement]:
-        self.click()
+        self.click()    
         return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+    
+    def getOptionTexts(self) -> list[str]:
+        dropdown_options = self.getOptions()
+        return [dropdown_option.text for dropdown_option in dropdown_options]
 
     def setValues(self, option_texts: list[str]) -> None:
         if not "iaDropdownCommon_multi-select" in self.get_attribute("class"):
@@ -140,6 +170,8 @@ class Dropdown(PerspectiveComponent):
                 raise ComponentInteractionException(
                     "Dropdown Value Not Present: %s" % option)
 
+class Icon(PerspectiveComponent):
+    pass
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
@@ -291,6 +323,7 @@ class _Pager(PerspectiveComponent):
     disbaled_next_prev_class_name = "ia_pager__prevNext--disabled"
     disabled_first_last_class_name = "ia_pager__jumpFirstLast--disabled"
     jump_field_class_name = "ia_pager__jump"
+    page_size_div_class_name = "ia_pager__pageSizeChooser"
 
     def getCurrentPage(self) -> int:
         activePageElem = self.waitForElement(By.CLASS_NAME, self.active_page_class_name)
@@ -303,7 +336,7 @@ class _Pager(PerspectiveComponent):
             if str(nextButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
                 nextButton.click()
             else:
-                """Cannot go to next page, already on last page"""
+                raise ComponentInteractionException("Cannot go to next page, already on last page")
         except NoSuchElementException:
             # No next button - every page num should be showing
             pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
@@ -311,7 +344,7 @@ class _Pager(PerspectiveComponent):
             if curPageIndex != len(pageElems) - 1:
                 pageElems[curPageIndex + 1].click()
             else:
-                """Cannot go to next page, already on last page"""
+                raise ComponentInteractionException("Cannot go to next page, already on last page")
         return self.getCurrentPage()
 
     def prevPage(self) -> int:
@@ -321,7 +354,7 @@ class _Pager(PerspectiveComponent):
             if str(prevButton.get_attribute("class")).count(self.disbaled_next_prev_class_name) == 0:
                 prevButton.click()
             else:
-                """Cannot go to previous page, already on first page"""
+                raise ComponentInteractionException("Cannot go to previous page, already on first page")
         except NoSuchElementException:
             # No prev button - every page num should be showing
             pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
@@ -329,7 +362,7 @@ class _Pager(PerspectiveComponent):
             if curPageIndex != 0:
                 pageElems[curPageIndex - 1].click()
             else:
-                """Cannot go to previous page, already on first page"""
+                raise ComponentInteractionException("Cannot go to previous page, already on first page")
         return self.getCurrentPage()
     
     def firstPage(self) -> None:
@@ -339,7 +372,7 @@ class _Pager(PerspectiveComponent):
             if str(firstButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
                 firstButton.click()
             else:
-                """Already on first page"""
+                raise ComponentInteractionException("Already on first page")
         except NoSuchElementException:
             # No first button
             try:
@@ -353,7 +386,7 @@ class _Pager(PerspectiveComponent):
                     pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
                     pageElems[0].click()
                 else:
-                    """Already on first page"""
+                    raise ComponentInteractionException("Already on first page")
     
     def lastPage(self) -> None:
         try:
@@ -362,7 +395,7 @@ class _Pager(PerspectiveComponent):
             if str(lastButton.get_attribute("class")).count(self.disabled_first_last_class_name) == 0:
                 lastButton.click()
             else:
-                """Already on last page"""
+                raise ComponentInteractionException("Already on last page")
         except NoSuchElementException:
             # No last button
             try:
@@ -376,7 +409,7 @@ class _Pager(PerspectiveComponent):
                     pageElems = self.waitForElements(By.CLASS_NAME, self.page_class_name)
                     pageElems[-1].click()
                 else:
-                    """Already on last page"""
+                    raise ComponentInteractionException("Already on last page")
 
     def jumpToPage(self, page: int) -> None:
         try:
@@ -422,9 +455,24 @@ class _Pager(PerspectiveComponent):
         self.jumpToPage(START_PAGE)
         return NUM_PAGES
 
-    # TODO: Get/Set page size
+    def getPageSizeSelect(self) -> Select:
+        selectParent: WebElement = self.find_element_by_class_name(self.page_size_div_class_name)
+        select = Select(selectParent.find_element_by_tag_name("select"))
+        return select
 
-    # TODO: Determine pager visibility
+    def getPageSize(self) -> int:
+        select = self.getPageSizeSelect()
+        selectedOption: WebElement = select.first_selected_option
+        optionStr = str(selectedOption.text)
+        pageSize = int(optionStr.split()[0])
+        return pageSize
+
+    def setPageSize(self, size: int):
+        select = self.getPageSizeSelect()
+        try:
+            select.select_by_value(str(size))
+        except NoSuchElementException:
+            raise ComponentInteractionException(f"No option exists to show {str(size)} items per page")
         
 
 class Table(PerspectiveComponent):
@@ -437,23 +485,51 @@ class Table(PerspectiveComponent):
 
     def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
-        self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds))
+        try:
+            self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, 2))
+        except ElementNotFoundException:
+            """ The table likely does not have a pager visible """
 
-    # _Pager Methods
+    # Start _Pager Methods
     def getCurrentPage(self) -> int:
-        return self._pager.getCurrentPage()
+        return self._pager.getCurrentPage() if self.hasPager() else 1
+
     def nextPage(self) -> int:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         return self._pager.nextPage()
+
     def prevPage(self) -> int:
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
         return self._pager.prevPage()
+
     def firstPage(self) -> None:
-        return self._pager.firstPage()
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
+        self._pager.firstPage()
+
     def lastPage(self) -> None:
-        return self._pager.lastPage()
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
+        self._pager.lastPage()
+
     def jumpToPage(self, page: int) -> None:
-        return self._pager.jumpToPage(page)
+        if not self.hasPager():
+            raise ComponentInteractionException("Page navigation is disabled for this table")
+        self._pager.jumpToPage(page)
+
     def getNumPages(self) -> int:
-        return self._pager.getNumPages()
+        return self._pager.getNumPages() if self.hasPager() else 1
+
+    def getPageSize(self) -> int:
+        return self._pager.getPageSize() if self.hasPager() else len(self.waitForElements(By.CLASS_NAME, self.row_group_class_name))
+
+    def setPageSize(self, size: int):
+        if not self.hasPager():
+            raise ComponentInteractionException("Setting the page size is disabled for this table")
+        self._pager.setPageSize(size)
+    # End _Pager Methods
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
@@ -472,6 +548,18 @@ class Table(PerspectiveComponent):
                         for element in rowGroup.find_elements_by_class_name(self.cell_class_name)]
             rows.append(rowCells)
         return rows
+    
+    def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> list[WebElement]:
+        if dataId:
+            return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-id='%s']" % dataId, timeout_in_seconds=5)
+        elif columnIndex:
+            return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-index='%s']" % columnIndex, timeout_in_seconds=5)
+        else:
+            raise ComponentInteractionException("Must provide a column selector dataId or columnIndex")
+
+    def getColumnTextsAsList(self, dataId: str=None, columnIndex: int=None) -> list[str]:
+        columnCells = self.getColumnAsList(dataId, columnIndex)
+        return [cell.text for cell in columnCells]
 
     def getCurrentPageData(self) -> list[dict]:
         rowGroups = self.getRowData()
@@ -522,6 +610,9 @@ class Table(PerspectiveComponent):
         filterInputBox: WebElement = filterContainer.find_element_by_class_name(
             "ia_inputField")
         filterInputBox.send_keys(keys)
+    
+    def hasPager(self) -> bool:
+        return self._pager is not None
 
 
 class TextArea(PerspectiveComponent):

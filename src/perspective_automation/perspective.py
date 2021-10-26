@@ -27,6 +27,7 @@ def Invasive(func):
 
 class Component(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
+        
         self.session = session
         if not element:
             if parent:
