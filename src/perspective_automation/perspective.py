@@ -5,6 +5,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 
 
@@ -65,6 +66,28 @@ class Component(WebElement):
         raiseable_exception = ElementNotFoundException(
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_elements(locator, identifier), timeout_in_seconds, raiseable_exception)
+
+    def waitToClick(self, locator: By, identifier: str, timeout_in_seconds=0) -> WebElement:
+        raiseable_exception = ElementNotFoundException(
+            "Unable to verify presence of %s: %s" % (locator, identifier))
+        locatorMethod = ec.element_to_be_clickable((locator, identifier))
+        return self.waitForMethod(locatorMethod, timeout_in_seconds, raiseable_exception)
+
+        # return WebDriverWait(self.session.driver, timeout_in_seconds).until(locatorMethod)
+        # return locatorMethod()
+        # return self.waitForMethod(lambda x: locatorMethod((locator, identifier)), timeout_in_seconds, raiseable_exception)
+        # try:
+        #     locatorMethod = ec.element_to_be_clickable((locator, identifier))
+        #     if timeout_in_seconds:
+        #         return WebDriverWait(self.driver, timeout_in_seconds).until(locatorMethod)
+
+        #     return self.wait.until(locatorMethod)
+        # except TimeoutException:
+        #     raise ElementNotFoundException(
+        #         "Unable to verify presence of %s: %s" % (locator, identifier))
+        # except:
+        #     raise Exception("Error waiting for element %s: %s" %
+        #                     (locator, identifier))
     
     def getFirstChild(self) -> WebElement:
         return super().find_element_by_xpath("./child::*")

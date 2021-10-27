@@ -172,6 +172,7 @@ class Dropdown(PerspectiveComponent):
 
 class Icon(PerspectiveComponent):
     pass
+
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
