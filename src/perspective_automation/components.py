@@ -194,7 +194,7 @@ class Menu(PerspectiveComponent):
                 return [label for label in menu_labels_all if label not in menu_labels_invisible]
                 # return [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all if label not in menu_labels_invisible]
 
-        except:
+        except TimeoutException as e:
             raise ElementNotFoundException("Unable to find menu items")
 
     def getValues(self, include_invisible=False) -> list[str]:
