@@ -219,7 +219,7 @@ class Menu(PerspectiveComponent):
                 value_div = label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div")
                 if value_div.get_attribute('innerHTML') == name:
                     label.click()
-        except Exception as e:
+        except TimeoutException as e:
             raise ElementNotFoundException("Unable to find menu item")
                 
 
