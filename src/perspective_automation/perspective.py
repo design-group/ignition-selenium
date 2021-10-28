@@ -25,13 +25,13 @@ def Invasive(func):
             func(*args, **kwargs)
     return decorator(wrapper, func)
 
-class Component(WebElement):
+class PerspectiveElement(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         
         self.session = session
         if not element:
             if parent:
-                element = Component(session, element=parent).waitForElement(
+                element = WebElement(session, element=parent).waitForElement(
                     locator, identifier, timeout_in_seconds=timeout_in_seconds)
             else:
                 element = self.session.waitForElement(identifier, locator, timeout_in_seconds=timeout_in_seconds)
@@ -66,6 +66,9 @@ class Component(WebElement):
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_elements(locator, identifier), timeout_in_seconds, raiseable_exception)
     
+    def doubleClick(self) -> None:
+        ActionChains(self.session.driver).double_click(self).perform()
+        
     def getFirstChild(self) -> WebElement:
         return super().find_element_by_xpath("./child::*")
 
@@ -76,14 +79,14 @@ class Component(WebElement):
         return self.screenshot_as_png()
 
 
-class PerspectiveComponent(Component):
+class PerspectiveComponent(PerspectiveElement):
     def selectAll(self) -> None:
         self.send_keys(self.session.select_all_keys)
 
 
-class PerspectiveElement(Component):
-    def __init__(self, session: Session, element: WebElement) -> None:
-        super().__init__(session, element=element)
+# class PerspectiveElement(Component):
+#     def __init__(self, session: Session, element: WebElement) -> None:
+#         super().__init__(session, element=element)
 
-    def doubleClick(self) -> None:
-        ActionChains(self.session.driver).double_click(self).perform()
+#     def doubleClick(self) -> None:
+#         ActionChains(self.session.driver).double_click(self).perform()

@@ -1,11 +1,9 @@
-
 from enum import Enum
 from typing import Union
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-from perspective_automation.perspective import (Component,
-                                                ComponentInteractionException,
+from perspective_automation.perspective import (ComponentInteractionException,
                                                 PerspectiveComponent,
                                                 PerspectiveElement,
                                                 ElementNotFoundException)
@@ -20,9 +18,11 @@ class InputState(Enum):
     INVALID = False
     VALID = True
 
+
 class AccordionHeaderType(Enum):
     TEXT = 1
     VIEW = 2
+
 
 class AccordionHeader(PerspectiveElement):
     def getHeaderType(self) -> AccordionHeaderType:
@@ -42,7 +42,6 @@ class AccordionHeader(PerspectiveElement):
     
     def setExpansion(self, value: bool):
         currentState = self.isExpanded()
-
         if currentState != value:
             self.toggleExpansion()
 
@@ -53,6 +52,7 @@ class AccordionHeader(PerspectiveElement):
         if self.getHeaderType() != AccordionHeaderType.TEXT:
             raise ComponentInteractionException("Cannot get text of a non-text accordion header.")
         return self.text
+
 
 class Accordion(PerspectiveComponent):
     def getHeaderElements(self) -> list[WebElement]:
@@ -75,8 +75,10 @@ class Accordion(PerspectiveComponent):
         if not headers[index].isExpanded():
             headers[index].toggleExpansion()
 
+
 class Button(PerspectiveComponent):
     pass
+
 
 class CheckBox(PerspectiveComponent):
     def getValue(self) -> bool:
@@ -88,8 +90,8 @@ class CheckBox(PerspectiveComponent):
                 "check_box_outline_blank": False
                 # "ia_checkbox__uncheckedIcon"
             }
-
             return checkboxState.get(checkboxId)
+
         except NoSuchElementException:
             """Lets try another class set"""
             try:
@@ -101,7 +103,6 @@ class CheckBox(PerspectiveComponent):
         except Exception as e:
             """ Raise the original exception """
             raise e
-        
 
     def toggle(self) -> bool:
         if self.get_attribute('class') == 'ia_checkbox':
@@ -114,6 +115,7 @@ class CheckBox(PerspectiveComponent):
     def setValue(self, value: bool) -> None:
         if self.getValue() != value:
             self.toggle()
+
 
 class Dropdown(PerspectiveComponent):
     def getValues(self) -> list[WebElement]:
@@ -170,18 +172,20 @@ class Dropdown(PerspectiveComponent):
                 raise ComponentInteractionException(
                     "Dropdown Value Not Present: %s" % option)
 
+
 class Icon(PerspectiveComponent):
     pass
+
+
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
 
+
 class NumericInput(PerspectiveComponent):
-    
     def getInputBox(self) -> WebElement:
         self.find_element_by_class_name("ia-numeral-input").click()
         return self.find_element_by_class_name("ia-numeral-input")
-
 
     def getInputState(self) -> InputState:
         self.getInputBox()
@@ -194,7 +198,6 @@ class NumericInput(PerspectiveComponent):
         
         if invalidInputBox:
             return InputState.INVALID
-        
         return InputState.VALID
 
     def isInputValid(self):
@@ -209,13 +212,13 @@ class NumericInput(PerspectiveComponent):
     def setValue(self, value: Union[int, float], withSubmit: bool = False, replace: bool = True) -> None:
         if replace:
             self.clearValue()
-
         self.send_keys(str(value))
 
         if withSubmit:
             self.getInputBox().submit()
 
-class Popup(Component):
+
+class Popup(PerspectiveElement):
     def __init__(self, session: Session, identifier: str = None) -> None:
         super().__init__(session, By.ID, "popup-%s" % identifier)
 
@@ -224,6 +227,7 @@ class Popup(Component):
 
     def close(self) -> None:
         self.find_element_by_class_name("close-icon").click()
+
 
 class TabContainer(PerspectiveComponent):
     tab_class_name = "tab-menu-item"
@@ -580,6 +584,7 @@ class TextArea(PerspectiveComponent):
 
         self.send_keys(str(text))
 
+
 class TextBox(PerspectiveComponent):
     def clearText(self) -> None:
         self.selectAll()
@@ -592,5 +597,6 @@ class TextBox(PerspectiveComponent):
         if withSubmit:
             self.submit()
 
-class View(Component):
+
+class View(PerspectiveElement):
     pass
