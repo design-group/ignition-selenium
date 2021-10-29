@@ -11,6 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 class ElementNotFoundException(Exception):
     pass
 
+
 class ComponentInteractionException(Exception):
     pass
 
@@ -24,6 +25,7 @@ def Invasive(func):
         else:
             func(*args, **kwargs)
     return decorator(wrapper, func)
+
 
 class PerspectiveElement(WebElement):
     def __init__(self, session: Session, locator: By = By.CLASS_NAME, identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
@@ -82,11 +84,3 @@ class PerspectiveElement(WebElement):
 class PerspectiveComponent(PerspectiveElement):
     def selectAll(self) -> None:
         self.send_keys(self.session.select_all_keys)
-
-
-# class PerspectiveElement(Component):
-#     def __init__(self, session: Session, element: WebElement) -> None:
-#         super().__init__(session, element=element)
-
-#     def doubleClick(self) -> None:
-#         ActionChains(self.session.driver).double_click(self).perform()

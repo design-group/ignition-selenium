@@ -58,7 +58,7 @@ class Accordion(PerspectiveComponent):
     def getHeaderElements(self) -> list[WebElement]:
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__header")
 
-    def getAccordianHeaders(self) -> list[AccordionHeader]:
+    def getAccordionHeaders(self) -> list[AccordionHeader]:
         return [AccordionHeader(self.session, element) for element in self.getHeaderElements()]
 
     def getBodyElements(self) -> list[WebElement]:
@@ -218,17 +218,6 @@ class NumericInput(PerspectiveComponent):
             self.getInputBox().submit()
 
 
-class Popup(PerspectiveElement):
-    def __init__(self, session: Session, identifier: str = None) -> None:
-        super().__init__(session, By.ID, "popup-%s" % identifier)
-
-    def getRoot(self) -> WebElement:
-        return self.parent.parent.parent
-
-    def close(self) -> None:
-        self.find_element_by_class_name("close-icon").click()
-
-
 class TabContainer(PerspectiveComponent):
     tab_class_name = "tab-menu-item"
     active_tab_class_name = "tab-active"
@@ -256,19 +245,6 @@ class TabContainer(PerspectiveComponent):
         containerContent = PerspectiveElement(self.session, self.find_element_by_partial_class_name(self.tab_container_content_class_name))
         elemInContainer = containerContent.getFirstChild()
         return elemInContainer
-
-
-class TableRowGroup(PerspectiveElement):
-    def getDataId(self) -> str:
-        return self.get_attribute("data-column-id")
-
-
-class TableCell(PerspectiveElement):
-    def getDataId(self) -> str:
-        return self.get_attribute("data-column-id")
-
-    def getData(self) -> str:
-        return self.find_element_by_class_name("content").text
 
 
 class _Pager(PerspectiveComponent):
@@ -433,6 +409,17 @@ class _Pager(PerspectiveComponent):
             raise ComponentInteractionException(f"No option exists to show {str(size)} items per page")
         
 
+class Popup(PerspectiveElement):
+    def __init__(self, session: Session, identifier: str = None) -> None:
+        super().__init__(session, By.ID, "popup-%s" % identifier)
+
+    def getRoot(self) -> WebElement:
+        return self.parent.parent.parent
+
+    def close(self) -> None:
+        self.find_element_by_class_name("close-icon").click()
+
+
 class Table(PerspectiveComponent):
     header_cell_class_name = "ia_table__head__header__cell"
     row_group_class_name = "ia_table__body__rowGroup"
@@ -571,6 +558,19 @@ class Table(PerspectiveComponent):
     
     def hasPager(self) -> bool:
         return self._pager is not None
+
+
+class TableRowGroup(PerspectiveElement):
+    def getDataId(self) -> str:
+        return self.get_attribute("data-column-id")
+
+
+class TableCell(PerspectiveElement):
+    def getDataId(self) -> str:
+        return self.get_attribute("data-column-id")
+
+    def getData(self) -> str:
+        return self.find_element_by_class_name("content").text
 
 
 class TextArea(PerspectiveComponent):
