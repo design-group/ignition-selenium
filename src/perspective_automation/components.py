@@ -60,6 +60,22 @@ class Accordion(PerspectiveComponent):
 
     def getAccordianHeaders(self) -> list[AccordionHeader]:
         return [AccordionHeader(self.session, element) for element in self.getHeaderElements()]
+        
+    def getAccordionHeaderByText(self, searchText: str) -> AccordionHeader:
+        """
+        Takes string such as group number or process and searches the AccordionHeaders for a match
+        If match is found, return the AccordionHeader element
+        """
+        headers = self.getAccordionHeaders()
+        header_dict = {}
+
+        for header in headers:
+            header_dict[header.getHeaderText()] = header
+
+        for key, value in header_dict:
+            if searchText in key:
+                return value
+        raise ElementNotFoundException("No header exists with the text \"%s\"." % searchText)
 
     def getBodyElements(self) -> list[WebElement]:
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__body")
