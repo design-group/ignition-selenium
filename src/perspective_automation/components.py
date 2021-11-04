@@ -70,7 +70,11 @@ class Accordion(PerspectiveComponent):
         header_dict = {}
 
         for header in headers:
-            header_dict[header.getHeaderText()] = header
+            try:
+                header_dict[header.getHeaderText()] = header
+            except ComponentInteractionException:
+                """ This is not a text header """
+                pass
 
         for key, value in header_dict:
             if searchText in key:
