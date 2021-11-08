@@ -60,6 +60,26 @@ class Accordion(PerspectiveComponent):
 
     def getAccordionHeaders(self) -> list[AccordionHeader]:
         return [AccordionHeader(self.session, element) for element in self.getHeaderElements()]
+        
+    def getAccordionHeaderByText(self, searchText: str) -> AccordionHeader:
+        """
+        Takes string such as group number or process and searches the AccordionHeaders for a match
+        If match is found, return the AccordionHeader element
+        """
+        headers = self.getAccordionHeaders()
+        header_dict = {}
+
+        for header in headers:
+            try:
+                header_dict[header.getHeaderText()] = header
+            except ComponentInteractionException:
+                """ This is not a text header """
+                pass
+
+        for key, value in header_dict:
+            if searchText in key:
+                return value
+        raise ElementNotFoundException("No header exists with the text \"%s\"." % searchText)
 
     def getBodyElements(self) -> list[WebElement]:
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__body")
@@ -176,11 +196,55 @@ class Dropdown(PerspectiveComponent):
 class Icon(PerspectiveComponent):
     pass
 
-
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
 
+class Menu(PerspectiveComponent):
+    menu_class = "menu-item"
+    menu_label_class = "menu-option"
+    menu_invisible_class = "item-invisible"
+
+    def getLabels(self, include_invisible=False) -> list[WebElement]:
+        try:
+            self.waitForElement(By.CLASS_NAME, self.menu_label_class)
+            menu_labels_all = self.find_elements_by_partial_class_name(self.menu_label_class)
+
+            if include_invisible:
+                return menu_labels_all
+            else:                
+                menu_labels_invisible = self.find_elements_by_partial_class_name(self.menu_invisible_class)
+                return [label for label in menu_labels_all if label not in menu_labels_invisible]
+                # return [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all if label not in menu_labels_invisible]
+
+        except TimeoutException as e:
+            raise ElementNotFoundException("Unable to find menu items")
+
+    def getValues(self, include_invisible=False) -> list[str]:
+        try:
+            if include_invisible:
+                menu_labels_all = self.getLabels(include_invisible=True)
+                labels = [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all]
+                return [label.get_attribute('innerHTML') for label in labels]
+            else:
+                menu_labels_visible = self.getLabels()
+                labels = [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_visible]
+                return [label.get_attribute('innerHTML') for label in labels]
+
+        except Exception as e:
+            raise ElementNotFoundException("Unable to find menu items")
+
+    def selectMenu(self, name: str):
+        labels = self.getLabels()
+        try:
+            name in self.getValues()
+            for label in labels:
+                value_div = label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div")
+                if value_div.get_attribute('innerHTML') == name:
+                    label.click()
+        except TimeoutException as e:
+            raise ElementNotFoundException("Unable to find menu item")
+                
 
 class NumericInput(PerspectiveComponent):
     def getInputBox(self) -> WebElement:

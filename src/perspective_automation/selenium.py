@@ -116,7 +116,21 @@ class Session(object):
         except:
             raise Exception("Error waiting for element %s: %s" %
                             (locator, identifier))
-    
+
+    def waitToClick(self, identifier, locator=By.CLASS_NAME, timeout_in_seconds=None) -> WebElement:
+        try:
+            locatorMethod = ec.element_to_be_clickable((locator, identifier))
+            if timeout_in_seconds:
+                return WebDriverWait(self.driver, timeout_in_seconds).until(locatorMethod)
+
+            return self.wait.until(locatorMethod)
+        except TimeoutException:
+            raise ElementNotFoundException(
+                "Unable to verify presence of %s: %s" % (locator, identifier))
+        except:
+            raise Exception("Error waiting for element %s: %s" %
+                            (locator, identifier))
+
     def close(self):
         self.driver.quit()
     
@@ -130,8 +144,11 @@ class Session(object):
             if trialPanel:
                 self.resetTrial()
                 self.navigateToUrl(self.original_page_url)
-                self.waitForElement(
-                    "login-panel").find_element_by_class_name("submit-button").click()
+                self.waitToClick(
+                    "login-panel".find_element_by_class_name("submit-button").click()
+                )
+                # self.waitForElement(
+                #     "login-panel").find_element_by_class_name("submit-button").click()
                 return
 
         # Click the opening "CONTINUE TO LOG IN" button
@@ -140,21 +157,23 @@ class Session(object):
         # Enter the username
         usernameField = self.waitForElement("username-field")
         usernameField.send_keys(self.credentials.username)
-        self.waitForElement("submit-button").click()
+        self.waitToClick("submit-button").click()
+        # self.waitForElement("submit-button").click()
 
         # Enter the password
-        passwordField = self.waitForElement("password-field")
+        passwordField = self.waitToClick("password-field")
         passwordField.send_keys(self.credentials.password)
-        self.waitForElement("submit-button").click()
+        self.waitToClick("submit-button").click()
 
     def openGatewayWebpage(self):
         self.navigateToUrl("%s/web/home" % self.base_url)
 
     def resetTrial(self):
         self.openGatewayWebpage()
-        self.waitForElement("login-link", By.ID).click()
+        self.waitToClick("login-link", By.ID).click()
+
         self.login()
-        self.waitForElement("reset-trial-anchor", By.ID).click()
+        self.waitToClick("reset-trial-anchor", By.ID).click()
     
     def getLogsFrom(self, logSource: LogSource):
         if self.log_sources.count(logSource.value) == 0:
