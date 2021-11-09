@@ -58,7 +58,7 @@ class Accordion(PerspectiveComponent):
     def getHeaderElements(self) -> list[WebElement]:
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__header")
 
-    def getAccordianHeaders(self) -> list[AccordionHeader]:
+    def getAccordionHeaders(self) -> list[AccordionHeader]:
         return [AccordionHeader(self.session, element) for element in self.getHeaderElements()]
         
     def getAccordionHeaderByText(self, searchText: str) -> AccordionHeader:
