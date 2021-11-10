@@ -41,10 +41,10 @@ class Component(WebElement):
         super().__init__(element.parent, element.id, w3c=True)
 
     def find_element_by_partial_class_name(self, name) -> WebElement:
-        return super().find_element_by_xpath("//*[contains(@class, '%s')]" % name)
+        return super().find_element_by_xpath(".//*[contains(@class, '%s')]" % name)
 
     def find_elements_by_partial_class_name(self, name) -> list[WebElement]:
-        return super().find_elements_by_xpath("//*[contains(@class, '%s')]" % name)
+        return super().find_elements_by_xpath(".//*[contains(@class, '%s')]" % name)
 
     def waitForMethod(self, method, timeout_in_seconds=None, exception: Exception = None):
         try:
