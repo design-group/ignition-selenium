@@ -659,5 +659,18 @@ class TextBox(PerspectiveComponent):
         if withSubmit:
             self.submit()
 
+class ToggleSwitch(PerspectiveComponent):
+    def getValue(self) -> bool:
+        track: WebElement = self.find_element_by_class_name("ia_toggleSwitch__track")
+        return "--selected" in track.get_attribute("class")
+
+    def toggle(self) -> bool:
+        self.click()
+        return self.getValue()
+
+    def setValue(self, value: bool) -> None:
+        if self.getValue() != value:
+            self.toggle()
+
 class View(Component):
     pass
