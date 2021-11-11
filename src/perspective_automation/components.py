@@ -507,8 +507,10 @@ class Table(PerspectiveComponent):
     def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
         try:
-            self._pager = _Pager(self.session, element=self.waitForElement(By.CLASS_NAME, self.pager_class_name, 2))
-        except ElementNotFoundException:
+            pagers = self.waitForElements(By.CLASS_NAME, self.pager_class_name)
+            if pagers:
+                self._pager = _Pager(self.session, element=pagers[0])
+        except (ElementNotFoundException, NoSuchElementException):
             """ The table likely does not have a pager visible """
 
     # Start _Pager Methods
