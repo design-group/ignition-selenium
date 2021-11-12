@@ -507,7 +507,7 @@ class Table(PerspectiveComponent):
     def __init__(self, session: Session, locator: By = ..., identifier: str = None, element: WebElement = None, parent: WebElement = None, timeout_in_seconds=None):
         super().__init__(session, locator, identifier, element, parent, timeout_in_seconds)
         try:
-            pagers = self.waitForElements(By.CLASS_NAME, self.pager_class_name)
+            pagers = self.waitForElements(By.CLASS_NAME, self.pager_class_name, timeout_in_seconds=2)
             if pagers:
                 self._pager = _Pager(self.session, element=pagers[0])
         except (ElementNotFoundException, NoSuchElementException):
