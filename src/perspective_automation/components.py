@@ -281,6 +281,14 @@ class NumericInput(PerspectiveComponent):
 
         if withSubmit:
             self.getInputBox().submit()
+    
+    @property
+    def text(self):
+        if self.tag_name == "input":
+            return self.get_attribute("value")
+        else:
+            inputTag: WebElement = self.find_element_by_tag_name("input")
+            return inputTag.get_attribute("value")
 
 class Popup(Component):
     def __init__(self, session: Session, identifier: str = None) -> None:
