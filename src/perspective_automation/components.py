@@ -71,12 +71,12 @@ class Accordion(PerspectiveComponent):
 
         for header in headers:
             try:
-                header_dict[header.getHeaderText()] = header
+                header_dict[header.text] = header
             except ComponentInteractionException:
                 """ This is not a text header """
                 pass
 
-        for key, value in header_dict:
+        for key, value in header_dict.items():
             if searchText in key:
                 return value
         raise ElementNotFoundException("No header exists with the text \"%s\"." % searchText)
