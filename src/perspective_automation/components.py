@@ -282,14 +282,20 @@ class NumericInput(PerspectiveComponent):
         if withSubmit:
             self.getInputBox().submit()
     
-    def getValue(self) -> Union[int, float]:
-        try:
-            val = int(self.text)
-        except ValueError:
+    def getValue(self, forceFloat: bool = False) -> Union[int, float]:
+        if forceFloat is True:
             try:
                 val = float(self.text)
             except ValueError:
                 raise ValueError("The NumericInput has an invalid value: " + self.text)
+        else:
+            try:
+                val = int(self.text)
+            except ValueError:
+                try:
+                    val = float(self.text)
+                except ValueError:
+                    raise ValueError("The NumericInput has an invalid value: " + self.text)
         
         return val
 
