@@ -280,6 +280,31 @@ class NumericInput(PerspectiveComponent):
 
         if withSubmit:
             self.getInputBox().submit()
+    
+    def getValue(self, forceFloat: bool = False) -> Union[int, float]:
+        if forceFloat is True:
+            try:
+                val = float(self.text)
+            except ValueError:
+                raise ValueError("The NumericInput has an invalid value: " + self.text)
+        else:
+            try:
+                val = int(self.text)
+            except ValueError:
+                try:
+                    val = float(self.text)
+                except ValueError:
+                    raise ValueError("The NumericInput has an invalid value: " + self.text)
+        
+        return val
+
+    @property
+    def text(self):
+        if self.tag_name == "input":
+            return self.get_attribute("value")
+        else:
+            inputTag: WebElement = self.find_element_by_tag_name("input")
+            return inputTag.get_attribute("value")
 
 
 class TabContainer(PerspectiveComponent):
