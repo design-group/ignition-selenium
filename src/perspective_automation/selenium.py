@@ -43,7 +43,7 @@ def getChromeDriver(**kwargs) -> webdriver:
     if kwargs.get('headless', True):
         chrome_options.add_argument("--headless")
     
-    # log_soruces
+    # log_sources
     logSourceCapability = {}
     logSourceList = kwargs.get('log_sources', [])
     for logSource in logSourceList:
@@ -64,9 +64,11 @@ def getSafariDriver(**kwargs) -> webdriver:
     
     return webdriver.Safari()
 
+
 class Browsers(Enum):
-    GOOGLE_CHROME = getChromeDriver
+    GOOGLE_CHROME = ()
     SAFARI = getSafariDriver
+
 
 class Session(object):
     def __init__(self, base_url, page_path, wait_timeout_in_seconds, **kwargs) -> None:
@@ -81,7 +83,6 @@ class Session(object):
         self.select_all_keys = self.getSelectAllKeys()
         self.log_sources = kwargs.get('log_sources', [])
 
-
     def __enter__(self):
         if self.credentials:
             self.login()
@@ -89,7 +90,6 @@ class Session(object):
     
     def __exit__(self, type, value, traceback):
         self.close()
-
 
     def getSelectAllKeys(self) -> Keys:
         return SelectAllKeys[self.platform_version].value
@@ -133,7 +133,6 @@ class Session(object):
 
     def close(self):
         self.driver.quit()
-
     
     def login(self) -> None:
         # Wait for the login panel to be present
