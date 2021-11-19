@@ -196,9 +196,11 @@ class Dropdown(PerspectiveComponent):
 class Icon(PerspectiveComponent):
     pass
 
+
 class Label(PerspectiveComponent):
     def getText(self) -> str:
         return self.text
+
 
 class Menu(PerspectiveComponent):
     menu_class = "menu-item"
@@ -509,6 +511,19 @@ class Popup(PerspectiveElement):
         self.find_element_by_class_name("close-icon").click()
 
 
+class TableRowGroup(PerspectiveElement):
+    def getDataId(self) -> str:
+        return self.get_attribute("data-column-id")
+
+
+class TableCell(PerspectiveElement):
+    def getDataId(self) -> str:
+        return self.get_attribute("data-column-id")
+
+    def getData(self) -> str:
+        return self.find_element_by_class_name("content").text
+
+
 class Table(PerspectiveComponent):
     header_cell_class_name = "ia_table__head__header__cell"
     row_group_class_name = "ia_table__body__rowGroup"
@@ -651,19 +666,6 @@ class Table(PerspectiveComponent):
         return self._pager is not None
 
 
-class TableRowGroup(PerspectiveElement):
-    def getDataId(self) -> str:
-        return self.get_attribute("data-column-id")
-
-
-class TableCell(PerspectiveElement):
-    def getDataId(self) -> str:
-        return self.get_attribute("data-column-id")
-
-    def getData(self) -> str:
-        return self.find_element_by_class_name("content").text
-
-
 class TextArea(PerspectiveComponent):
     def clearText(self) -> None:
         self.selectAll()
@@ -687,6 +689,7 @@ class TextBox(PerspectiveComponent):
         self.send_keys(str(text))
         if withSubmit:
             self.submit()
+
 
 class ToggleSwitch(PerspectiveComponent):
     def getValue(self) -> bool:
