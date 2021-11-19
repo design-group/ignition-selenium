@@ -34,7 +34,7 @@ class PerspectiveElement(WebElement):
         self.session = session
         if not element:
             if parent:
-                element = WebElement(session, element=parent).waitForElement(
+                element = PerspectiveElement(session, element=parent).waitForElement(
                     locator, identifier, timeout_in_seconds=timeout_in_seconds)
             else:
                 element = self.session.waitForElement(identifier, locator, timeout_in_seconds=timeout_in_seconds)
