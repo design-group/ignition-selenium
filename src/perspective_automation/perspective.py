@@ -34,10 +34,10 @@ class PerspectiveElement(WebElement):
         self.session = session
         if not element:
             if parent:
-                element = WebElement(session, element=parent).waitForElement(
+                element = PerspectiveElement(session, element=parent).waitForElement(
                     locator, identifier, timeout_in_seconds=timeout_in_seconds)
             else:
-                element = self.session.waitForElement(identifier, locator, timeout_in_seconds=timeout_in_seconds)
+                element = session.waitForElement(identifier, locator, timeout_in_seconds=timeout_in_seconds)
 
         # I am not sure why w3c has to be true or this _.find_element_by_xxx fails?
         super().__init__(element.parent, element.id, w3c=True)
@@ -74,22 +74,6 @@ class PerspectiveElement(WebElement):
             "Unable to verify presence of %s: %s" % (locator, identifier))
         locatorMethod = ec.element_to_be_clickable((locator, identifier))
         return self.waitForMethod(locatorMethod, timeout_in_seconds, raiseable_exception)
-
-        # return WebDriverWait(self.session.driver, timeout_in_seconds).until(locatorMethod)
-        # return locatorMethod()
-        # return self.waitForMethod(lambda x: locatorMethod((locator, identifier)), timeout_in_seconds, raiseable_exception)
-        # try:
-        #     locatorMethod = ec.element_to_be_clickable((locator, identifier))
-        #     if timeout_in_seconds:
-        #         return WebDriverWait(self.driver, timeout_in_seconds).until(locatorMethod)
-
-        #     return self.wait.until(locatorMethod)
-        # except TimeoutException:
-        #     raise ElementNotFoundException(
-        #         "Unable to verify presence of %s: %s" % (locator, identifier))
-        # except:
-        #     raise Exception("Error waiting for element %s: %s" %
-        #                     (locator, identifier))
     
     def doubleClick(self) -> None:
         ActionChains(self.session.driver).double_click(self).perform()

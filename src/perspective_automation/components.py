@@ -59,7 +59,7 @@ class Accordion(PerspectiveComponent):
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__header")
 
     def getAccordionHeaders(self) -> list[AccordionHeader]:
-        return [AccordionHeader(self.session, element) for element in self.getHeaderElements()]
+        return [AccordionHeader(self.session, element=element) for element in self.getHeaderElements()]
         
     def getAccordionHeaderByText(self, searchText: str) -> AccordionHeader:
         """
@@ -89,7 +89,7 @@ class Accordion(PerspectiveComponent):
 
     def expandBody(self, index: int) -> None:
         headersElements = self.getHeaderElements()
-        headers = [AccordionHeader(self.session, element)
+        headers = [AccordionHeader(self.session, element=element)
                    for element in headersElements]
 
         if not headers[index].isExpanded():
@@ -217,7 +217,6 @@ class Menu(PerspectiveComponent):
             else:                
                 menu_labels_invisible = self.find_elements_by_partial_class_name(self.menu_invisible_class)
                 return [label for label in menu_labels_all if label not in menu_labels_invisible]
-                # return [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all if label not in menu_labels_invisible]
 
         except TimeoutException as e:
             raise ElementNotFoundException("Unable to find menu items")
@@ -584,18 +583,18 @@ class Table(PerspectiveComponent):
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
-        return [TableCell(self.session, element).getDataId() for element in headerElements]
+        return [TableCell(self.session, element=element).getDataId() for element in headerElements]
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
-        return [TableRowGroup(self.session, element) for element in rowGroupElements]
+        return [TableRowGroup(self.session, element=element) for element in rowGroupElements]
 
     def getRowData(self) -> list[list[TableCell]]:
         rowGroups = self.getRowGroups()
 
         rows = []
         for rowGroup in rowGroups:
-            rowCells = [TableCell(self.session, element)
+            rowCells = [TableCell(self.session, element=element)
                         for element in rowGroup.find_elements_by_class_name(self.cell_class_name)]
             rows.append(rowCells)
         return rows
