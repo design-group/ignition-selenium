@@ -113,9 +113,10 @@ class Session(object):
         except TimeoutException:
             raise ElementNotFoundException(
                 "Unable to verify presence of %s: %s" % (locator, identifier))
-        except:
-            raise Exception("Error waiting for element %s: %s" %
-                            (locator, identifier))
+        except Exception as e:
+            raise Exception(e)
+            # raise Exception("Error waiting for element %s: %s" %
+                            # (locator, identifier))
 
     def waitToClick(self, identifier, locator=By.CLASS_NAME, timeout_in_seconds=None) -> WebElement:
         try:
