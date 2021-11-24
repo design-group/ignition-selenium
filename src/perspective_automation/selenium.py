@@ -66,7 +66,7 @@ def getSafariDriver(**kwargs) -> webdriver:
 
 
 class Browsers(Enum):
-    GOOGLE_CHROME = ()
+    GOOGLE_CHROME = getChromeDriver
     SAFARI = getSafariDriver
 
 
