@@ -164,7 +164,7 @@ class Dropdown(PerspectiveComponent):
                 return
 
     def getOptions(self) -> list[WebElement]:
-        self.click()    
+        self.click()  
         return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
     
     def getOptionTexts(self) -> list[str]:
@@ -191,6 +191,13 @@ class Dropdown(PerspectiveComponent):
             if not optionAdded:
                 raise ComponentInteractionException(
                     "Dropdown Value Not Present: %s" % option)
+
+    def isVisible(self) -> bool:
+        '''
+        Currently an invisible dropdown in the filter does not have a distinct class like the Menu "item-invisible" class
+        An invisible element will have a height of 0; checks the element's height.
+        '''
+        return self.get_attribute("height") != 0
 
 
 class Icon(PerspectiveComponent):
@@ -584,6 +591,17 @@ class Table(PerspectiveComponent):
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element=element).getDataId() for element in headerElements]
+
+    def getRowCount(self) -> int:
+        num_pages = self.getNumPages()
+        num_rows = self.getPageSize()
+        if num_pages > 1:
+            self.lastPage()      
+            last_rows = len(self.getRowGroups())
+            self.firstPage()
+        else:
+            last_rows = len(self.getRowGroups())
+        return ((num_pages - 1) * num_rows + last_rows)
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
