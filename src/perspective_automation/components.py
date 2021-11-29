@@ -193,6 +193,56 @@ class Dropdown(PerspectiveComponent):
                     "Dropdown Value Not Present: %s" % option)
 
 
+class DateTimeInput(PerspectiveComponent):
+    DATE_TIME_INPUT_CLASS_NAME = 'ia_dateTimeInputComponent'
+    MODAL_CLASS_NAME = 'ia_componentModal'
+    DATE_PICKER_CLASS_NAME = 'iaDateRangePicker'
+    TIME_PICKER_CLASS_NAME = 'iaTimePickerInput'
+    MONTH_SELECT_CLASS_NAME = 'monthSelectorContainer'
+    YEAR_SELECT_CLASS_NAME = 'yearSelectorContainer'
+
+    def getValue(self) -> str:
+        if self.tag_name == 'input':
+            return str(self.get_attribute('value'))
+        else:
+            inputTag: WebElement = self.find_element_by_tag_name('input')
+            return inputTag.get_attribute('value')
+    
+    def getDateTimeModal(self) -> PerspectiveElement:
+        return PerspectiveElement(self.session, By.CLASS_NAME, self.MODAL_CLASS_NAME)
+
+    def getDatePicker(self) -> PerspectiveElement:
+        modal = self.getDateTimeModal()
+        return PerspectiveElement(self.session, By.CLASS_NAME, self.DATE_PICKER_CLASS_NAME, parent=modal)
+    
+    def getTimePicker(self) -> PerspectiveElement:
+        modal = self.getDateTimeModal()
+        return PerspectiveElement(self.session, By.CLASS_NAME, self.TIME_PICKER_CLASS_NAME, parent=modal)
+
+    def getYear(self) -> int:
+        self.click()
+        yearSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.YEAR_SELECT_CLASS_NAME, parent=self.getDatePicker())
+        yearSelect = Select(yearSelectWrapper.find_element_by_tag_name('select'))
+        selectedOptionTag: WebElement = yearSelect.first_selected_option
+        val = int(selectedOptionTag.text)
+        self.click()
+        return val
+    
+    def _setYear(self, year: int):
+        self.click()
+        yearSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.YEAR_SELECT_CLASS_NAME, parent=self.getDatePicker())
+        yearSelectElement: WebElement = yearSelectWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = yearSelectElement.find_element_by_css_selector("option[value='%s']" % str(year))
+        # yearSelect = Select(yearSelectElement)
+        yearSelectElement.click()
+        optionToClick.click()
+        # yearSelect.select_by_value(str(year))
+        self.click()
+
+    def _setMonth(self, month: str):
+        pass
+
+
 class Icon(PerspectiveComponent):
     pass
 
