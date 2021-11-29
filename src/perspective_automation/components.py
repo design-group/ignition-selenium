@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Union
+from datetime import datetime
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -197,9 +198,14 @@ class DateTimeInput(PerspectiveComponent):
     DATE_TIME_INPUT_CLASS_NAME = 'ia_dateTimeInputComponent'
     MODAL_CLASS_NAME = 'ia_componentModal'
     DATE_PICKER_CLASS_NAME = 'iaDateRangePicker'
-    TIME_PICKER_CLASS_NAME = 'iaTimePickerInput'
     MONTH_SELECT_CLASS_NAME = 'monthSelectorContainer'
     YEAR_SELECT_CLASS_NAME = 'yearSelectorContainer'
+    DAY_CALENDAR_CLASS_NAME = 'calendar'
+    DAY_TILE_CLASS_NAME = 'ia_dateRangePicker__calendar__dayTile'
+    TIME_PICKER_CLASS_NAME = 'iaTimePickerInput'
+    HOUR_FIELD_CLASS_NAME = 'hours'
+    MINUTE_FIELD_CLASS_NAME = 'minutes'
+    AM_PM_PICKER_CLASS_NAME = 'timePickerAmPmPicker'
 
     def getValue(self) -> str:
         if self.tag_name == 'input':
@@ -229,18 +235,68 @@ class DateTimeInput(PerspectiveComponent):
         return val
     
     def _setYear(self, year: int):
-        self.click()
         yearSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.YEAR_SELECT_CLASS_NAME, parent=self.getDatePicker())
-        yearSelectElement: WebElement = yearSelectWrapper.find_element_by_tag_name('select')
-        optionToClick: WebElement = yearSelectElement.find_element_by_css_selector("option[value='%s']" % str(year))
-        # yearSelect = Select(yearSelectElement)
-        yearSelectElement.click()
+        yearSelect: WebElement = yearSelectWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = yearSelect.find_element_by_css_selector("option[value='%s']" % str(year))
+        yearSelect.click()
         optionToClick.click()
-        # yearSelect.select_by_value(str(year))
-        self.click()
+        yearSelect.click()
 
-    def _setMonth(self, month: str):
-        pass
+    def _setMonth(self, month: int):
+        monthSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.MONTH_SELECT_CLASS_NAME, parent=self.getDatePicker())
+        monthSelect: WebElement = monthSelectWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = monthSelect.find_element_by_css_selector("option[value='%s']" % str(month))
+        monthSelect.click()
+        optionToClick.click()
+        monthSelect.click()
+    
+    def _setDayInCurrentMonth(self, day: int):
+        datePicker = self.getDatePicker()
+        calendar: WebElement = datePicker.find_element_by_class_name('calendar')
+        dayToClick: WebElement = calendar.find_element_by_css_selector("div.%s[data-day='%s']" % (self.DAY_TILE_CLASS_NAME, str(day)))
+        dayToClick.click()
+    
+    def _setTime(self, hour: int, minute: int):
+        # Convert from 24h to 12h time
+        if hour >= 12:
+            AM_OR_PM = 'pm'
+            hour -= 12
+        else:
+            AM_OR_PM = 'am'
+        if hour == 0:
+            hour = 12
+        
+        timePicker = self.getTimePicker()
+
+        # Hours
+        # hoursField: WebElement = self.find_element_by_class_name(self.HOUR_FIELD_CLASS_NAME)
+        timePicker.waitToClick(By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME)
+        hoursField = TextBox(self.session, By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME, parent=timePicker)
+        hoursField.doubleClick()
+        hoursField.setText(str(hour), replace=False)
+
+        # Minutes
+        # minutesField: WebElement = self.find_element_by_class_name(self.MINUTE_FIELD_CLASS_NAME)
+        timePicker.waitToClick(By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME)
+        minutesField = TextBox(self.session, By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME, parent=timePicker)
+        minutesField.doubleClick()
+        minutesField.setText(str(minute), replace=False)
+
+        # AM/PM
+        selectAmPmWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.AM_PM_PICKER_CLASS_NAME, parent=timePicker)
+        selectAmPm: WebElement = selectAmPmWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = selectAmPm.find_element_by_css_selector("option[value='%s']" % AM_OR_PM)
+        selectAmPm.click()
+        optionToClick.click()
+        selectAmPm.click()
+
+
+    def setDateTime(self, dateTime: datetime):
+        self.click()
+        self._setTime(dateTime.hour, dateTime.minute)
+        self._setYear(dateTime.year)
+        self._setMonth(dateTime.month)
+        self._setDayInCurrentMonth(dateTime.day)
 
 
 class Icon(PerspectiveComponent):
