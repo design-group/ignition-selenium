@@ -12,7 +12,7 @@ pip install git+ssh://git@git.ejgallo.com/operational_technology/ignition/infras
 
 You can also install your local copy of this repository as a package (great for if you need to quickly test new features):
 ```
-pip install /path/to/repo/
+pip install -e /path/to/repo/
 ```
 
 ## Common Issues
