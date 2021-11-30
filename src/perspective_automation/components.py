@@ -82,6 +82,7 @@ class Accordion(PerspectiveComponent):
         raise ElementNotFoundException("No header exists with the text \"%s\"." % searchText)
 
     def getBodyElements(self) -> list[WebElement]:
+        self.waitUntilClickable(By.CLASS_NAME, "ia_accordionComponent__body")
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__body")
 
     def toggleBody(self, index: int) -> bool:
@@ -93,6 +94,7 @@ class Accordion(PerspectiveComponent):
                    for element in headersElements]
 
         if not headers[index].isExpanded():
+
             headers[index].toggleExpansion()
 
 

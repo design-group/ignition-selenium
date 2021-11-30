@@ -69,7 +69,7 @@ class PerspectiveElement(WebElement):
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_elements(locator, identifier), timeout_in_seconds, raiseable_exception)
 
-    def waitToClick(self, locator: By, identifier: str, timeout_in_seconds=0) -> WebElement:
+    def waitUntilClickable(self, locator: By, identifier: str, timeout_in_seconds=0) -> WebElement:
         raiseable_exception = ElementNotFoundException(
             "Unable to verify presence of %s: %s" % (locator, identifier))
         locatorMethod = ec.element_to_be_clickable((locator, identifier))
