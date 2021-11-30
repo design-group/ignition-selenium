@@ -1,3 +1,4 @@
+import time
 from enum import Enum
 from typing import Union
 from datetime import datetime
@@ -269,18 +270,22 @@ class DateTimeInput(PerspectiveComponent):
         timePicker = self.getTimePicker()
 
         # Hours
-        # hoursField: WebElement = self.find_element_by_class_name(self.HOUR_FIELD_CLASS_NAME)
         timePicker.waitToClick(By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME)
         hoursField = TextBox(self.session, By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME, parent=timePicker)
-        hoursField.doubleClick()
-        hoursField.setText(str(hour), replace=False)
+        hoursField.click()
+        hoursField.selectAll()
+        for char in str(hour):
+            time.sleep(0.2)
+            hoursField.setText(char, replace=False)
 
         # Minutes
-        # minutesField: WebElement = self.find_element_by_class_name(self.MINUTE_FIELD_CLASS_NAME)
         timePicker.waitToClick(By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME)
         minutesField = TextBox(self.session, By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME, parent=timePicker)
-        minutesField.doubleClick()
-        minutesField.setText(str(minute), replace=False)
+        minutesField.click()
+        minutesField.selectAll()
+        for char in str(minute):
+            time.sleep(0.2)
+            minutesField.setText(char, replace=False)
 
         # AM/PM
         selectAmPmWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.AM_PM_PICKER_CLASS_NAME, parent=timePicker)
