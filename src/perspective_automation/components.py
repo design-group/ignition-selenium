@@ -56,6 +56,7 @@ class AccordionHeader(PerspectiveElement):
 
 class Accordion(PerspectiveComponent):
     def getHeaderElements(self) -> list[WebElement]:
+        self.waitUntilClickable(By.CLASS_NAME, "ia_accordionComponent__header")
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__header")
 
     def getAccordionHeaders(self) -> list[AccordionHeader]:
@@ -86,7 +87,7 @@ class Accordion(PerspectiveComponent):
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__body")
 
     def toggleBody(self, index: int) -> bool:
-        return AccordionHeader(self.session, self.getHeaderElements()[index]).toggleExpansion()
+        return AccordionHeader(self.session, element=self.getHeaderElements()[index]).toggleExpansion()
 
     def expandBody(self, index: int) -> None:
         headersElements = self.getHeaderElements()
