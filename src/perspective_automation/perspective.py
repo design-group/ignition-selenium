@@ -1,4 +1,5 @@
 import pytest
+from typing import Union
 from decorator import decorator
 from perspective_automation.selenium import Session
 from selenium.common.exceptions import TimeoutException
@@ -15,6 +16,25 @@ class ElementNotFoundException(Exception):
 
 class ComponentInteractionException(Exception):
     pass
+
+
+class ElementTextChanges(object):
+  """An expectation for checking that an element's text attribute has changed.
+
+  element - the web element to use
+  prev_text - the previous text
+  returns the WebElement once its text is different from prev_text
+  """
+  def __init__(self, element: WebElement, prev_text: str):
+    self.element: WebElement = element
+    self.prev_text: str = prev_text
+
+  def __call__(self, driver):
+    if self.prev_text != self.element.text:
+        return self.element
+    else:
+        return False
+
 
 def Invasive(func):
     def wrapper(func, *args, **kwargs):
@@ -75,6 +95,18 @@ class PerspectiveElement(WebElement):
         locatorMethod = ec.element_to_be_clickable((locator, identifier))
         return self.waitForMethod(locatorMethod, timeout_in_seconds, raiseable_exception)
     
+    def waitForTextChange(self, element: WebElement, prev_text: Union[str, None] = None, timeout_in_seconds=None) -> WebElement:
+        """
+        Will wait until `element.text != prev_text`.
+        If `prev_text` is not specified, the element's current text will be used.
+        """
+        if prev_text is None:
+            prev_text = element.text
+        raiseable_exception = ElementNotFoundException(
+            "The text of Element %s did not change within %s seconds" % (element, timeout_in_seconds))
+        locatorMethod = ElementTextChanges(element, prev_text)
+        return self.waitForMethod(locatorMethod, timeout_in_seconds, raiseable_exception)
+
     def doubleClick(self) -> None:
         ActionChains(self.session.driver).double_click(self).perform()
         
