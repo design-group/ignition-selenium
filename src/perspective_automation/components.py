@@ -678,8 +678,6 @@ class Table(PerspectiveComponent):
             raise e
 
 
-
-
 class TextArea(PerspectiveComponent):
     def clearText(self) -> None:
         self.selectAll()
