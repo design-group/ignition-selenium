@@ -87,6 +87,14 @@ class Accordion(PerspectiveComponent):
     def toggleBody(self, index: int) -> bool:
         return AccordionHeader(self.session, self.getHeaderElements()[index]).toggleExpansion()
 
+    def expandAll(self) -> None:
+        headersElements = self.getHeaderElements()
+        headers = [AccordionHeader(self.session, element=element)
+                    for element in headersElements]
+        for header in headers:
+            if not header.isExpanded():
+                header.toggleExpansion()
+
     def expandBody(self, index: int) -> None:
         headersElements = self.getHeaderElements()
         headers = [AccordionHeader(self.session, element=element)
