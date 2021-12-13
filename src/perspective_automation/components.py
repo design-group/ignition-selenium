@@ -1,5 +1,7 @@
+import time
 from enum import Enum
 from typing import Union
+from datetime import datetime
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -56,6 +58,7 @@ class AccordionHeader(PerspectiveElement):
 
 class Accordion(PerspectiveComponent):
     def getHeaderElements(self) -> list[WebElement]:
+        self.waitUntilClickable(By.CLASS_NAME, "ia_accordionComponent__header")
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__header")
 
     def getAccordionHeaders(self) -> list[AccordionHeader]:
@@ -82,10 +85,11 @@ class Accordion(PerspectiveComponent):
         raise ElementNotFoundException("No header exists with the text \"%s\"." % searchText)
 
     def getBodyElements(self) -> list[WebElement]:
+        self.waitUntilClickable(By.CLASS_NAME, "ia_accordionComponent__body")
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__body")
 
     def toggleBody(self, index: int) -> bool:
-        return AccordionHeader(self.session, self.getHeaderElements()[index]).toggleExpansion()
+        return AccordionHeader(self.session, element=self.getHeaderElements()[index]).toggleExpansion()
 
     def expandBody(self, index: int) -> None:
         headersElements = self.getHeaderElements()
@@ -93,6 +97,7 @@ class Accordion(PerspectiveComponent):
                    for element in headersElements]
 
         if not headers[index].isExpanded():
+
             headers[index].toggleExpansion()
 
 
@@ -164,7 +169,7 @@ class Dropdown(PerspectiveComponent):
                 return
 
     def getOptions(self) -> list[WebElement]:
-        self.click()    
+        self.click()  
         return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
     
     def getOptionTexts(self) -> list[str]:
@@ -191,6 +196,122 @@ class Dropdown(PerspectiveComponent):
             if not optionAdded:
                 raise ComponentInteractionException(
                     "Dropdown Value Not Present: %s" % option)
+
+    def isVisible(self) -> bool:
+        '''
+        Currently an invisible dropdown in the filter does not have a distinct class like the Menu "item-invisible" class
+        An invisible element will have a height of 0; checks the element's height.
+        '''
+        return self.get_attribute("height") != 0
+
+
+class DateTimeInput(PerspectiveComponent):
+    DATE_TIME_INPUT_CLASS_NAME = 'ia_dateTimeInputComponent'
+    MODAL_CLASS_NAME = 'ia_componentModal'
+    DATE_PICKER_CLASS_NAME = 'iaDateRangePicker'
+    MONTH_SELECT_CLASS_NAME = 'monthSelectorContainer'
+    YEAR_SELECT_CLASS_NAME = 'yearSelectorContainer'
+    DAY_CALENDAR_CLASS_NAME = 'calendar'
+    DAY_TILE_CLASS_NAME = 'ia_dateRangePicker__calendar__dayTile'
+    TIME_PICKER_CLASS_NAME = 'iaTimePickerInput'
+    HOUR_FIELD_CLASS_NAME = 'hours'
+    MINUTE_FIELD_CLASS_NAME = 'minutes'
+    AM_PM_PICKER_CLASS_NAME = 'timePickerAmPmPicker'
+
+    def getValue(self) -> str:
+        if self.tag_name == 'input':
+            return str(self.get_attribute('value'))
+        else:
+            inputTag: WebElement = self.find_element_by_tag_name('input')
+            return inputTag.get_attribute('value')
+    
+    def getDateTimeModal(self) -> PerspectiveElement:
+        return PerspectiveElement(self.session, By.CLASS_NAME, self.MODAL_CLASS_NAME)
+
+    def getDatePicker(self) -> PerspectiveElement:
+        modal = self.getDateTimeModal()
+        return PerspectiveElement(self.session, By.CLASS_NAME, self.DATE_PICKER_CLASS_NAME, parent=modal)
+    
+    def getTimePicker(self) -> PerspectiveElement:
+        modal = self.getDateTimeModal()
+        return PerspectiveElement(self.session, By.CLASS_NAME, self.TIME_PICKER_CLASS_NAME, parent=modal)
+
+    def getYear(self) -> int:
+        self.click()
+        yearSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.YEAR_SELECT_CLASS_NAME, parent=self.getDatePicker())
+        yearSelect = Select(yearSelectWrapper.find_element_by_tag_name('select'))
+        selectedOptionTag: WebElement = yearSelect.first_selected_option
+        val = int(selectedOptionTag.text)
+        self.click()
+        return val
+    
+    def _setYear(self, year: int):
+        yearSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.YEAR_SELECT_CLASS_NAME, parent=self.getDatePicker())
+        yearSelect: WebElement = yearSelectWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = yearSelect.find_element_by_css_selector("option[value='%s']" % str(year))
+        yearSelect.click()
+        optionToClick.click()
+        yearSelect.click()
+
+    def _setMonth(self, month: int):
+        monthSelectWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.MONTH_SELECT_CLASS_NAME, parent=self.getDatePicker())
+        monthSelect: WebElement = monthSelectWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = monthSelect.find_element_by_css_selector("option[value='%s']" % str(month))
+        monthSelect.click()
+        optionToClick.click()
+        monthSelect.click()
+    
+    def _setDayInCurrentMonth(self, day: int):
+        datePicker = self.getDatePicker()
+        calendar: WebElement = datePicker.find_element_by_class_name('calendar')
+        dayToClick: WebElement = calendar.find_element_by_css_selector("div.%s[data-day='%s']" % (self.DAY_TILE_CLASS_NAME, str(day)))
+        dayToClick.click()
+    
+    def _setTime(self, hour: int, minute: int):
+        # Convert from 24h to 12h time
+        if hour >= 12:
+            AM_OR_PM = 'pm'
+            hour -= 12
+        else:
+            AM_OR_PM = 'am'
+        if hour == 0:
+            hour = 12
+        
+        timePicker = self.getTimePicker()
+
+        # Hours
+        timePicker.waitToClick(By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME)
+        hoursField = TextBox(self.session, By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME, parent=timePicker)
+        hoursField.click()
+        hoursField.selectAll()
+        for char in str(hour):
+            time.sleep(0.2)
+            hoursField.setText(char, replace=False)
+
+        # Minutes
+        timePicker.waitToClick(By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME)
+        minutesField = TextBox(self.session, By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME, parent=timePicker)
+        minutesField.click()
+        minutesField.selectAll()
+        for char in str(minute):
+            time.sleep(0.2)
+            minutesField.setText(char, replace=False)
+
+        # AM/PM
+        selectAmPmWrapper = PerspectiveElement(self.session, By.CLASS_NAME, self.AM_PM_PICKER_CLASS_NAME, parent=timePicker)
+        selectAmPm: WebElement = selectAmPmWrapper.find_element_by_tag_name('select')
+        optionToClick: WebElement = selectAmPm.find_element_by_css_selector("option[value='%s']" % AM_OR_PM)
+        selectAmPm.click()
+        optionToClick.click()
+        selectAmPm.click()
+
+
+    def setDateTime(self, dateTime: datetime):
+        self.click()
+        self._setTime(dateTime.hour, dateTime.minute)
+        self._setYear(dateTime.year)
+        self._setMonth(dateTime.month)
+        self._setDayInCurrentMonth(dateTime.day)
 
 
 class Icon(PerspectiveComponent):
@@ -584,6 +705,17 @@ class Table(PerspectiveComponent):
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element=element).getDataId() for element in headerElements]
+
+    def getRowCount(self) -> int:
+        num_pages = self.getNumPages()
+        num_rows = self.getPageSize()
+        if num_pages > 1:
+            self.lastPage()      
+            last_rows = len(self.getRowGroups())
+            self.firstPage()
+        else:
+            last_rows = len(self.getRowGroups())
+        return ((num_pages - 1) * num_rows + last_rows)
 
     def getRowGroups(self) -> list[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
