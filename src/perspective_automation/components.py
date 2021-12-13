@@ -796,6 +796,19 @@ class Table(PerspectiveComponent):
     def hasPager(self) -> bool:
         return self._pager is not None
 
+    def sortBy(self, columnId:str, direction:str = "up") -> None:
+        try:
+            column = self.find_element_by_css_selector("div[data-column-id={columnId}]")
+            up = self.find_element_by_class_name("sort-up", parent=column)
+            down = self.find_element_by_class_name("sort-down", parent=column)
+
+            if direction == "up":
+                up.click()
+            else:
+                down.click()
+        except ElementNotFoundException as e:
+            raise e
+
 
 class TextArea(PerspectiveComponent):
     def clearText(self) -> None:
