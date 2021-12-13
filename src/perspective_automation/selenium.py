@@ -145,11 +145,7 @@ class Session(object):
             if trialPanel:
                 self.resetTrial()
                 self.navigateToUrl(self.original_page_url)
-                self.waitToClick(
-                    "login-panel".find_element_by_class_name("submit-button").click()
-                )
-                # self.waitForElement(
-                #     "login-panel").find_element_by_class_name("submit-button").click()
+                self.waitToClick(By.CLASS_NAME, "submit-button")
                 return
 
         # Click the opening "CONTINUE TO LOG IN" button

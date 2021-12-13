@@ -1,4 +1,6 @@
 import time
+import random
+import random
 from enum import Enum
 from typing import Union
 from datetime import datetime
@@ -174,7 +176,13 @@ class Dropdown(PerspectiveComponent):
         except:
             """No value currently set"""
             pass
-
+    
+    def setRandomValue(self) -> None:
+        dropdownOptions = self.getOptions()
+        ind = random.randrange(0, len(dropdownOptions))
+        dropdownOptions[ind].click()
+        return
+        
     def setValue(self, option_text: str) -> None:
         dropdownOptions = self.getOptions()
 
