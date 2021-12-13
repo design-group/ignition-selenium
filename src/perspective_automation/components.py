@@ -143,6 +143,13 @@ class CheckBox(PerspectiveComponent):
 
 
 class Dropdown(PerspectiveComponent):
+    def getValue(self) -> WebElement:
+        try:
+            return self.waitForElement(By.CLASS_NAME, "ia_dropdown__valueSingle", timeout_in_seconds=1)
+        except ElementNotFoundException:
+            """Unable to find any value in dropdown"""
+            return ''
+        
     def getValues(self) -> list[WebElement]:
         try:
             return self.waitForElements(By.CLASS_NAME, "ia_dropdown__valuePill", timeout_in_seconds=1)
