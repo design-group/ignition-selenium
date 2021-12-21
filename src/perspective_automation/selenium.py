@@ -69,10 +69,12 @@ def getRemoteChromeDriver(**kwargs) -> webdriver:
 
     chrome_options.headless = kwargs.get('headless', True)
 
-    if kwargs.get('insecure', False):
+    remote_options = kwargs.get('remote', {})
+
+    if remote_options.get('insecure', False):
         chrome_options.set_capability('acceptInsecureCerts', True)
     
-    command_executor = kwargs.get('command_executor')
+    command_executor = remote_options.get('command_executor')
     if command_executor:
         return webdriver.Remote(command_executor, options=chrome_options)
     else:
