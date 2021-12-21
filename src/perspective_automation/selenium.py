@@ -64,16 +64,34 @@ def getSafariDriver(**kwargs) -> webdriver:
     
     return webdriver.Safari()
 
+def getRemoteChromeDriver(**kwargs) -> webdriver:
+    chrome_options = webdriver.ChromeOptions()
 
-class Browsers(Enum):
-    GOOGLE_CHROME = getChromeDriver
-    SAFARI = getSafariDriver
+    chrome_options.headless = kwargs.get('headless', True)
 
+    if kwargs.get('insecure', False):
+        chrome_options.set_capability('acceptInsecureCerts', True)
+    
+    command_executor = kwargs.get('command_executor')
+    if command_executor:
+        return webdriver.Remote(command_executor, options=chrome_options)
+    else:
+        """
+        No command_executor specified in remote session.
+        Defaulting to 'http://127.0.0.1:4444/wd/hub'.
+        """
+        return webdriver.Remote(options=chrome_options)
+
+BROWSERS = {
+    "chrome": getChromeDriver,
+    "safari": getSafariDriver,
+    "remote": getRemoteChromeDriver
+}
 
 class Session(object):
     def __init__(self, base_url, page_path, wait_timeout_in_seconds, **kwargs) -> None:
 
-        self.driver = kwargs.get('browser', Browsers.GOOGLE_CHROME)(**kwargs)
+        self.driver = BROWSERS[kwargs.get('browser', 'chrome')](**kwargs)
         self.base_url = base_url
         self.original_page_url = base_url + page_path
         self.navigateToUrl(self.original_page_url)
