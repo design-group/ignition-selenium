@@ -192,7 +192,7 @@ class Dropdown(PerspectiveComponent):
 
     def getOptions(self) -> list[WebElement]:
         self.click()  
-        return self.waitForElements(By.XPATH, "//*[contains(@class, 'ia_dropdown__option')]")
+        return self.waitForElements(By.XPATH, "//*[contains(@class, 'popup')]//child::a", timeout_in_seconds=15)
     
     def getOptionTexts(self) -> list[str]:
         dropdown_options = self.getOptions()
@@ -808,6 +808,9 @@ class Table(PerspectiveComponent):
 
         rowGroups[rowIndex].doubleClick()
 
+    def clickOnOrderDetails(self, rowIndex: int) -> None:
+        self.getColumnAsList("Details")[rowIndex].click()
+
     def filterTable(self, keys: str) -> None:
         filterContainer: WebElement = self.find_element_by_class_name(self.table_filter_container_class_name)
         filterContainer.find_element_by_class_name("ia_inputField").click()
@@ -819,14 +822,17 @@ class Table(PerspectiveComponent):
         return self._pager is not None
 
     def sortBy(self, columnId:str, direction:str = "up") -> None:
+        column_id = f"div[data-column-id=\"{columnId}\""
         try:
-            column = self.find_element_by_css_selector("div[data-column-id={columnId}]")
-            up = self.find_element_by_class_name("sort-up", parent=column)
-            down = self.find_element_by_class_name("sort-down", parent=column)
+            column = self.find_element_by_css_selector(column_id)
+            up = Button(self.session, By.CLASS_NAME, "sort-up", parent=column)
+            down = Button(self.session, By.CLASS_NAME, "sort-down", parent=column)
+            up_classes = up.get_attribute("class")
+            down_classes = down.get_attribute("class")
 
-            if direction == "up":
+            if direction == 'up' and 'active' not in up_classes:
                 up.click()
-            else:
+            elif direction == 'down' and 'active' not in down_classes:
                 down.click()
         except ElementNotFoundException as e:
             raise e
