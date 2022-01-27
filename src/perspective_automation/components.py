@@ -3,6 +3,7 @@ import random
 from enum import Enum
 from typing import Union
 from datetime import datetime
+from pyparsing import null_debug_action
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -842,6 +843,9 @@ class TextArea(PerspectiveComponent):
     def clearText(self) -> None:
         self.selectAll()
         self.send_keys(Keys.DELETE)
+        
+    def isReadonly(self) -> bool:
+       return self.get_attribute("readonly") == "true"
 
     def setText(self, text: str, replace: bool = True) -> None:
         if replace:
