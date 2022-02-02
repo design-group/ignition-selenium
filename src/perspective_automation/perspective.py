@@ -1,6 +1,4 @@
-import pytest
 from typing import Union
-from decorator import decorator
 from perspective_automation.selenium import Session
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
