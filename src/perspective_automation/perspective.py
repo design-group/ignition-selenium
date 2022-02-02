@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium import __version__ as SELENIUM_VERSION
 
 
 class ElementNotFoundException(Exception):
@@ -45,8 +46,12 @@ class PerspectiveElement(WebElement):
             else:
                 element = session.waitForElement(identifier, locator, timeout_in_seconds=timeout_in_seconds)
 
-        # I am not sure why w3c has to be true or this _.find_element_by_xxx fails?
-        super().__init__(element.parent, element.id, w3c=True)
+        SELENIUM_MAJOR_VERSION = int(str(SELENIUM_VERSION)[0])
+        if SELENIUM_MAJOR_VERSION <= 3:
+            # I am not sure why w3c has to be true or this _.find_element_by_xxx fails?
+            super().__init__(element.parent, element.id, w3c=True)
+        else:
+            super().__init__(element.parent, element.id)
 
     def find_element_by_partial_class_name(self, name) -> WebElement:
         return super().find_element_by_xpath(".//*[contains(@class, '%s')]" % name)
