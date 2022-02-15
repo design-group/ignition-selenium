@@ -726,7 +726,7 @@ class Table(PerspectiveComponent):
 
     def getHeaders(self) -> list[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
-        return [TableCell(self.session, element=element).getDataId() for element in headerElements]
+        return [TableCell(self.session, element=element) for element in headerElements]
 
     def getRowCount(self) -> int:
         num_pages = self.getNumPages()
