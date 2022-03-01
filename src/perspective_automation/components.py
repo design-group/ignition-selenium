@@ -345,50 +345,38 @@ class Label(PerspectiveComponent):
         return self.text
 
 
-class Menu(PerspectiveComponent):
-    menu_class = "menu-item"
-    menu_label_class = "menu-option"
+class MenuTree(PerspectiveComponent):
+    menu_item_class = "menu-item"
+    menu_label_class = "ia_menuTreeComponent__item__text"
     menu_invisible_class = "item-invisible"
 
-    def getLabels(self, include_invisible=False) -> list[WebElement]:
+    def getItems(self, include_invisible=False) -> list[WebElement]:
         try:
-            self.waitForElement(By.CLASS_NAME, self.menu_label_class)
-            menu_labels_all = self.find_elements_by_partial_class_name(self.menu_label_class)
-
+            menu_items_all = self.waitForElements(By.CLASS_NAME, self.menu_item_class)
             if include_invisible:
-                return menu_labels_all
+                return menu_items_all
             else:                
-                menu_labels_invisible = self.find_elements_by_partial_class_name(self.menu_invisible_class)
-                return [label for label in menu_labels_all if label not in menu_labels_invisible]
-
-        except TimeoutException as e:
+                menu_items_invisible = self.waitForElements(By.CLASS_NAME, self.menu_invisible_class)
+                return [label for label in menu_items_all if label not in menu_items_invisible]
+        except TimeoutException:
             raise ElementNotFoundException("Unable to find menu items")
 
-    def getValues(self, include_invisible=False) -> list[str]:
+    def getItemTexts(self, include_invisible=False) -> list[str]:
         try:
-            if include_invisible:
-                menu_labels_all = self.getLabels(include_invisible=True)
-                labels = [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_all]
-                return [label.get_attribute('innerHTML') for label in labels]
-            else:
-                menu_labels_visible = self.getLabels()
-                labels = [label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div") for label in menu_labels_visible]
-                return [label.get_attribute('innerHTML') for label in labels]
-
+            menu_items = self.getItems(include_invisible=include_invisible)
+            return [item.find_element(By.CLASS_NAME, self.menu_label_class).text for item in menu_items]
         except Exception as e:
             raise ElementNotFoundException("Unable to find menu items")
 
-    def selectMenu(self, name: str):
-        labels = self.getLabels()
-        try:
-            name in self.getValues()
-            for label in labels:
-                value_div = label.find_element_by_xpath(".//div[contains(@class, 'label-text')]/div")
-                if value_div.get_attribute('innerHTML') == name:
-                    label.click()
-        except TimeoutException as e:
-            raise ElementNotFoundException("Unable to find menu item")
-                
+    def selectItem(self, name: str):
+        menu_items = self.getItems()
+        for item in menu_items:
+            item_label: WebElement = item.find_element(By.CLASS_NAME, self.menu_label_class)
+            if item_label.text == name:
+                item.click()
+                return
+        raise ElementNotFoundException("Unable to find menu item: " + name)
+
 
 class NumericInput(PerspectiveComponent):
     def getInputBox(self) -> WebElement:
