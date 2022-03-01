@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
@@ -32,7 +33,7 @@ class SelectAllKeys(Enum):
     WINDOWS = Keys.CONTROL + "a"
     DARWIN = Keys.COMMAND + "a"
 
-def getChromeDriver(**kwargs) -> webdriver:
+def getChromeDriver(**kwargs) -> WebDriver:
     chrome_options = webdriver.ChromeOptions()
 
     if kwargs.get('mobile'):
@@ -58,13 +59,13 @@ def getChromeDriver(**kwargs) -> webdriver:
     else:
         return webdriver.Chrome(options=chrome_options)
 
-def getSafariDriver(**kwargs) -> webdriver:
+def getSafariDriver(**kwargs) -> WebDriver:
     if kwargs.get('mobile'):
         return webdriver.Safari(desired_capabilities={"safari:useSimulator": True, "platformName": "ios"})
     
     return webdriver.Safari()
 
-def getRemoteChromeDriver(**kwargs) -> webdriver:
+def getRemoteChromeDriver(**kwargs) -> WebDriver:
     chrome_options = webdriver.ChromeOptions()
 
     chrome_options.headless = kwargs.get('headless', True)
