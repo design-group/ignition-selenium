@@ -349,6 +349,7 @@ class MenuTree(PerspectiveComponent):
     menu_item_class = "menu-item"
     menu_label_class = "ia_menuTreeComponent__item__text"
     menu_invisible_class = "item-invisible"
+    back_button_class = "menu-back-action"
 
     def getItems(self, include_invisible=False) -> list[WebElement]:
         try:
@@ -377,6 +378,12 @@ class MenuTree(PerspectiveComponent):
                 return
         raise ElementNotFoundException("Unable to find menu item: " + name)
 
+    def clickBackButton(self):
+        try:
+            self.waitForElement(By.CLASS_NAME, self.back_button_class, timeout_in_seconds=3).click()
+        except ElementNotFoundException:
+            raise ElementNotFoundException("Back button not found. Please verify that the menu is not at the top level.")
+        
 
 class NumericInput(PerspectiveComponent):
     def getInputBox(self) -> WebElement:
