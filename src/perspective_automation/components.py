@@ -356,10 +356,13 @@ class MenuTree(PerspectiveComponent):
             menu_items_all = self.waitForElements(By.CLASS_NAME, self.menu_item_class)
             if include_invisible:
                 return menu_items_all
-            else:                
-                menu_items_invisible = self.waitForElements(By.CLASS_NAME, self.menu_invisible_class)
-                return [label for label in menu_items_all if label not in menu_items_invisible]
-        except TimeoutException:
+            else:
+                try:                
+                    menu_items_invisible = self.waitForElements(By.CLASS_NAME, self.menu_invisible_class, 3)
+                    return [label for label in menu_items_all if label not in menu_items_invisible]
+                except ElementNotFoundException:
+                    return menu_items_all
+        except ElementNotFoundException:
             raise ElementNotFoundException("Unable to find menu items")
 
     def getItemTexts(self, include_invisible=False) -> list[str]:
