@@ -212,3 +212,15 @@ class Session(object):
     
     def getServerLogs(self):
         return self.getLogsFrom(LogSource.SERVER)
+
+    def getWindowHandles(self) -> list[str]:
+        return self.driver.window_handles
+
+    def getCurrentWindowHandle(self) -> str:
+        return self.driver.current_window_handle
+
+    def switchToWindow(self, window_handle: str):
+        return self.driver.switch_to.window(window_handle)
+
+    def closeCurrentWindow(self):
+        self.driver.close()
