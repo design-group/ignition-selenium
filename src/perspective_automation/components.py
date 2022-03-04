@@ -856,12 +856,15 @@ class TextArea(PerspectiveComponent):
 
 class TextBox(PerspectiveComponent):
     def clearText(self) -> None:
+        self.click()
         self.selectAll()
         self.send_keys(Keys.DELETE)
 
     def setText(self, text: str, withSubmit: bool = False, replace: bool = True) -> None:
         if replace:
             self.clearText()
+        else:
+            self.click()
         self.send_keys(str(text))
         if withSubmit:
             self.submit()
