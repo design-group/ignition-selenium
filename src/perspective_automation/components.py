@@ -191,8 +191,9 @@ class Dropdown(PerspectiveComponent):
                 return
 
     def getOptions(self) -> list[WebElement]:
-        self.click()  
-        return self.waitForElements(By.XPATH, "//*[contains(@class, 'popup')]//child::a", timeout_in_seconds=15)
+        self.click()
+        options_modal = PerspectiveElement(self.session, By.CLASS_NAME, "iaDropdownCommon_options")
+        return options_modal.getChildren()
     
     def getOptionTexts(self) -> list[str]:
         dropdown_options = self.getOptions()
