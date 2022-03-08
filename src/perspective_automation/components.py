@@ -303,7 +303,7 @@ class DateTimeInput(PerspectiveComponent):
         timePicker = self.getTimePicker()
 
         # Hours
-        timePicker.waitToClick(By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME)
+        timePicker.waitUntilClickable(By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME)
         hoursField = TextBox(self.session, By.CLASS_NAME, self.HOUR_FIELD_CLASS_NAME, parent=timePicker)
         hoursField.click()
         hoursField.selectAll()
@@ -312,7 +312,7 @@ class DateTimeInput(PerspectiveComponent):
             hoursField.setText(char, replace=False)
 
         # Minutes
-        timePicker.waitToClick(By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME)
+        timePicker.waitUntilClickable(By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME)
         minutesField = TextBox(self.session, By.CLASS_NAME, self.MINUTE_FIELD_CLASS_NAME, parent=timePicker)
         minutesField.click()
         minutesField.selectAll()
