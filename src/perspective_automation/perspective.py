@@ -17,6 +17,10 @@ class ComponentInteractionException(Exception):
     pass
 
 
+class ElementNotUpdatedException(Exception):
+    pass
+
+
 class ElementTextChanges(object):
   """An expectation for checking that an element's text attribute has changed.
 
@@ -93,7 +97,7 @@ class PerspectiveElement(WebElement):
         """
         if prev_text is None:
             prev_text = element.text
-        raiseable_exception = ElementNotFoundException(
+        raiseable_exception = ElementNotUpdatedException(
             "The text of Element %s did not change within %s seconds" % (element, timeout_in_seconds))
         locatorMethod = ElementTextChanges(element, prev_text)
         return self.waitForMethod(locatorMethod, timeout_in_seconds, raiseable_exception)
