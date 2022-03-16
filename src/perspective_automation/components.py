@@ -727,6 +727,10 @@ class Table(PerspectiveComponent):
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element=element) for element in headerElements]
 
+    def getHeaderTexts(self) -> list[str]:
+        headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
+        return [element.text for element in headerElements]
+
     def getDataColumnIds(self) -> list[str]:
         return [header.getDataId() for header in self.getHeaders()]
 
