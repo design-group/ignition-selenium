@@ -1,6 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from platform import system
+from typing import List
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -213,7 +214,7 @@ class Session(object):
     def getServerLogs(self):
         return self.getLogsFrom(LogSource.SERVER)
 
-    def getWindowHandles(self) -> list[str]:
+    def getWindowHandles(self) -> List[str]:
         return self.driver.window_handles
 
     def getCurrentWindowHandle(self) -> str:
