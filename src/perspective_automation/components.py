@@ -1,7 +1,7 @@
 import time
 import random
 from enum import Enum
-from typing import Union
+from typing import Union, List
 from datetime import datetime
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -58,11 +58,11 @@ class AccordionHeader(PerspectiveElement):
 
 
 class Accordion(PerspectiveComponent):
-    def getHeaderElements(self) -> list[WebElement]:
+    def getHeaderElements(self) -> List[WebElement]:
         self.waitUntilClickable(By.CLASS_NAME, "ia_accordionComponent__header")
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__header")
 
-    def getAccordionHeaders(self) -> list[AccordionHeader]:
+    def getAccordionHeaders(self) -> List[AccordionHeader]:
         return [AccordionHeader(self.session, element=element) for element in self.getHeaderElements()]
         
     def getAccordionHeaderByText(self, searchText: str) -> AccordionHeader:
@@ -85,7 +85,7 @@ class Accordion(PerspectiveComponent):
                 return value
         raise ElementNotFoundException("No header exists with the text \"%s\"." % searchText)
 
-    def getBodyElements(self) -> list[WebElement]:
+    def getBodyElements(self) -> List[WebElement]:
         self.waitUntilClickable(By.CLASS_NAME, "ia_accordionComponent__body")
         return self.waitForElements(By.CLASS_NAME, "ia_accordionComponent__body")
 
@@ -159,7 +159,7 @@ class Dropdown(PerspectiveComponent):
             """Unable to find any value in dropdown"""
             return ''
         
-    def getValues(self) -> list[WebElement]:
+    def getValues(self) -> List[WebElement]:
         try:
             return self.waitForElements(By.CLASS_NAME, "ia_dropdown__valuePill", timeout_in_seconds=1)
         except ElementNotFoundException:
@@ -190,16 +190,16 @@ class Dropdown(PerspectiveComponent):
                 option.click()
                 return
 
-    def getOptions(self) -> list[WebElement]:
+    def getOptions(self) -> List[WebElement]:
         self.click()
         options_modal = PerspectiveElement(self.session, By.CLASS_NAME, "iaDropdownCommon_options")
         return options_modal.getChildren()
     
-    def getOptionTexts(self) -> list[str]:
+    def getOptionTexts(self) -> List[str]:
         dropdown_options = self.getOptions()
         return [dropdown_option.text for dropdown_option in dropdown_options]
 
-    def setValues(self, option_texts: list[str]) -> None:
+    def setValues(self, option_texts: List[str]) -> None:
         if not "iaDropdownCommon_multi-select" in self.get_attribute("class"):
             raise ComponentInteractionException("Dropdown is not multi-select")
 
@@ -352,7 +352,7 @@ class MenuTree(PerspectiveComponent):
     menu_invisible_class = "item-invisible"
     back_button_class = "menu-back-action"
 
-    def getItems(self, include_invisible=False) -> list[WebElement]:
+    def getItems(self, include_invisible=False) -> List[WebElement]:
         try:
             menu_items_all = self.waitForElements(By.CLASS_NAME, self.menu_item_class)
             if include_invisible:
@@ -366,7 +366,7 @@ class MenuTree(PerspectiveComponent):
         except ElementNotFoundException:
             raise ElementNotFoundException("Unable to find menu items")
 
-    def getItemTexts(self, include_invisible=False) -> list[str]:
+    def getItemTexts(self, include_invisible=False) -> List[str]:
         try:
             menu_items = self.getItems(include_invisible=include_invisible)
             return [item.find_element(By.CLASS_NAME, self.menu_label_class).text for item in menu_items]
@@ -455,10 +455,10 @@ class TabContainer(PerspectiveComponent):
     active_tab_class_name = "tab-active"
     tab_container_content_class_name = "ia_tabContainerComponent__content"
 
-    def getTabs(self) -> list[WebElement]:
+    def getTabs(self) -> List[WebElement]:
         return self.find_elements_by_partial_class_name(self.tab_class_name)
 
-    def getTabNames(self) -> list[str]:
+    def getTabNames(self) -> List[str]:
         tabs = self.getTabs()
         return [tab.text for tab in tabs]
 
@@ -598,7 +598,7 @@ class _Pager(PerspectiveComponent):
                         prevButton.click()
             except:
                 # No next and prev buttons on scren - every page num should be showing
-                pageElems: list[WebElement] = self.waitForElements(By.CLASS_NAME, self.page_class_name)
+                pageElems: List[WebElement] = self.waitForElements(By.CLASS_NAME, self.page_class_name)
                 for pageElem in pageElems:
                     if int(pageElem.text) == page:
                         pageElem.click()
@@ -723,15 +723,15 @@ class Table(PerspectiveComponent):
         self._pager.setPageSize(size)
     # End _Pager Methods
 
-    def getHeaders(self) -> list[TableCell]:
+    def getHeaders(self) -> List[TableCell]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [TableCell(self.session, element=element) for element in headerElements]
 
-    def getHeaderTexts(self) -> list[str]:
+    def getHeaderTexts(self) -> List[str]:
         headerElements = self.waitForElements(By.CLASS_NAME, self.header_cell_class_name)
         return [element.text for element in headerElements]
 
-    def getDataColumnIds(self) -> list[str]:
+    def getDataColumnIds(self) -> List[str]:
         return [header.getDataId() for header in self.getHeaders()]
 
     def getRowCount(self) -> int:
@@ -745,11 +745,11 @@ class Table(PerspectiveComponent):
             last_rows = len(self.getRowGroups())
         return ((num_pages - 1) * num_rows + last_rows)
 
-    def getRowGroups(self) -> list[TableRowGroup]:
+    def getRowGroups(self) -> List[TableRowGroup]:
         rowGroupElements = self.waitForElements(By.CLASS_NAME, self.row_group_class_name)
         return [TableRowGroup(self.session, element=element) for element in rowGroupElements]
 
-    def getRowData(self) -> list[list[TableCell]]:
+    def getRowData(self) -> List[List[TableCell]]:
         rowGroups = self.getRowGroups()
 
         rows = []
@@ -759,7 +759,7 @@ class Table(PerspectiveComponent):
             rows.append(rowCells)
         return rows
     
-    def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> list[WebElement]:
+    def getColumnAsList(self, dataId: str=None, columnIndex: int=None) -> List[WebElement]:
         if dataId:
             return self.waitForElements(By.XPATH, ".//*[@class='tc ia_table__cell' and @data-column-id='%s']" % dataId, timeout_in_seconds=5)
         elif columnIndex:
@@ -767,11 +767,11 @@ class Table(PerspectiveComponent):
         else:
             raise ComponentInteractionException("Must provide a column selector dataId or columnIndex")
 
-    def getColumnTextsAsList(self, dataId: str=None, columnIndex: int=None) -> list[str]:
+    def getColumnTextsAsList(self, dataId: str=None, columnIndex: int=None) -> List[str]:
         columnCells = self.getColumnAsList(dataId, columnIndex)
         return [cell.text for cell in columnCells]
 
-    def getCurrentPageData(self) -> list[dict]:
+    def getCurrentPageData(self) -> List[dict]:
         rowGroups = self.getRowData()
         rows = []
 
@@ -784,11 +784,11 @@ class Table(PerspectiveComponent):
 
         return rows
     
-    def getAllData(self) -> list[dict]:
+    def getAllData(self) -> List[dict]:
         START_PAGE = self.getCurrentPage()
         self.firstPage()
         curPage = 1
-        rows: list[dict] = []
+        rows: List[dict] = []
 
         while True:
             curPage = self.getCurrentPage()

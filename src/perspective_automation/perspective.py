@@ -7,7 +7,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium import __version__ as SELENIUM_VERSION
-
+from typing import List
 
 class ElementNotFoundException(Exception):
     pass
@@ -60,7 +60,7 @@ class PerspectiveElement(WebElement):
     def find_element_by_partial_class_name(self, name) -> WebElement:
         return super().find_element_by_xpath(".//*[contains(@class, '%s')]" % name)
 
-    def find_elements_by_partial_class_name(self, name) -> list[WebElement]:
+    def find_elements_by_partial_class_name(self, name) -> List[WebElement]:
         return super().find_elements_by_xpath(".//*[contains(@class, '%s')]" % name)
 
     def waitForMethod(self, method, timeout_in_seconds=None, exception: Exception = None):
@@ -79,7 +79,7 @@ class PerspectiveElement(WebElement):
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_element(locator, identifier), timeout_in_seconds, raiseable_exception)
 
-    def waitForElements(self, locator: By, identifier: str, timeout_in_seconds=None) -> list[WebElement]:
+    def waitForElements(self, locator: By, identifier: str, timeout_in_seconds=None) -> List[WebElement]:
         raiseable_exception = ElementNotFoundException(
             "Unable to verify presence of %s: %s" % (locator, identifier))
         return self.waitForMethod(lambda x: self.find_elements(locator, identifier), timeout_in_seconds, raiseable_exception)
@@ -108,7 +108,7 @@ class PerspectiveElement(WebElement):
     def getFirstChild(self) -> WebElement:
         return super().find_element_by_xpath("./child::*")
 
-    def getChildren(self) -> list[WebElement]:
+    def getChildren(self) -> List[WebElement]:
         return super().find_elements_by_xpath("./child::*")
     
     def getScreenshot(self):
