@@ -2,12 +2,12 @@
 
 How to install:
 ```
-pip install git+ssh://git@github.com/design-group/ignition-selenium.git#egg=perspective_automation
+pip3 install git+https://github.com/design-group/ignition-selenium.git#egg=perspective_automation
 ```
 
 To install a version from a specific branch, add `@branch_name` after `test-automation.git`. For example, when cloning from a branch called `my_branch`:
 ```
-pip install git+ssh://git@github.com/design-group/ignition-selenium.git@my_branch##egg=perspective_automation
+pip3 install git+https://github.com/design-group/ignition-selenium.git@my_branch##egg=perspective_automation
 ```
 
 You can also install your local copy of this repository as a package (great for if you need to quickly test new features):
