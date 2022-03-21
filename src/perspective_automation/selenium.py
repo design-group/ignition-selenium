@@ -107,7 +107,10 @@ class Session(object):
 
     def __enter__(self):
         if self.credentials:
+            print("Authentication required, logging into the app")
             self.login()
+        else:
+            print("No authentication required, opening page directly")
         return self
     
     def __exit__(self, type, value, traceback):

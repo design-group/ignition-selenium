@@ -10,7 +10,8 @@ To install a version from a specific branch, add `@branch_name` after `test-auto
 pip3 install git+https://github.com/design-group/ignition-selenium.git@my_branch##egg=perspective_automation
 ```
 
-You can also install your local copy of this repository as a package (great for if you need to quickly test new features):
+For local testing of new features, you can also install your local copy of this repository as a package. 
+Prior to installation, one should create a (virtual environment)[https://docs.python.org/3/library/venv.html], to make sure the version in this folder does not conflict with an existing installation.
 ```
 pip install -e /path/to/repo/
 ```
