@@ -1,4 +1,4 @@
-# Installation
+##  Installation
 
 How to install:
 ```
@@ -23,4 +23,30 @@ If you are switching between versions, use the `-U` flag in your `pip install` c
 If you are having problems installing due to SSL/TLS certificate verification issues, include the following options between `install` and the Git URL:
 ```
 --trusted-host pypi.org
+```
+
+## Example Usage
+
+```python
+# Library requires import of the component you will be interacting with
+from perspective_automation.components import Button
+import time
+
+def test_example():
+    # Specify URL that selenium will try to locate the component on.
+	PAGE_PATH = "/data/perspective/client/OnlineDemo/apps/preparedfoodsline"
+	BASE__URL = "https://demo.ia.io"
+
+    # Create your session and specify an alias that will be used in the block
+    with Session(base_url=BASE__URL, page_path=PAGE_PATH, wait_timeout_in_seconds=3, headless=False) as session:
+
+        # Create your component and specify the locator type and value
+        my_button = BUtton(session, By.ID, "myButtonID")
+
+        # Interaction and Unit Testing Below 
+        my_button.click()
+
+        # Wait for 10 seconds so user can see the result of the interaction.
+        time.sleep(10)
+
 ```
