@@ -2,6 +2,8 @@
 **/__pycache__
 **.egg-info
 target/
+dist/
+.pytest_cache/
 
 # Virtual Environment Data
 .venv
@@ -13,3 +15,6 @@ pyvenv.cfg
 
 # Testing files
 Testing/
+
+# Ignores temporary directories and files.
+tmp*
